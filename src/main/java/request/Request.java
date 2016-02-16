@@ -38,8 +38,8 @@ public class Request {
 		return method;
 	}
 	
-	public void setMethod(Method method) {
-		this.method = method;
+	public void setMethod(String method) {
+		this.method = Method.valueOf(method);
 	}
 	
 	public Headers getHeaders() {

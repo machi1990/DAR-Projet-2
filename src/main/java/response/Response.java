@@ -53,5 +53,8 @@ public class Response {
 		this.headers = headers;
 	}
 	
+	public String toString() {
+		return this.body;
+	}
 	
 }
