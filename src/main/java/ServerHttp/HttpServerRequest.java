@@ -8,6 +8,8 @@ import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import request.Request;
+
 public class HttpServerRequest {
 	public static void main(String[] args){
 		int port = 20000;
@@ -15,6 +17,7 @@ public class HttpServerRequest {
         Socket clientSocket = null;
         BufferedReader in = null;
         BufferedWriter out = null;
+        Request request = new Request();
 		
 //		if(args.length < 2){
 //			System.out.println("Erreur : nombre d'arguments invalide");
@@ -48,10 +51,21 @@ public class HttpServerRequest {
 			}
 	        
 	        String s;
+	        String parser[];
             try {
+            	int lineNb = 0;
 				while ((s = in.readLine()) != null) {
+					lineNb++;
 				    System.out.println(s);
-				    
+				    parser = s.split(" ");
+				    switch(lineNb){
+				    case 1 :
+				    	request.setMethod(parser[0]);
+				    	
+				    	break;
+				    case 2:
+				    	request.setHost(parser[1]);
+				    }
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
