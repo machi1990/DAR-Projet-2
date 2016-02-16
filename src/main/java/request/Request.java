@@ -52,9 +52,9 @@ public class Request {
 	
 	@Override
 	public String toString() {
-		return  "Host: "+ this.host + 
-				"Method: "+ this.method.name() +
-				"Body: " + this.body + 
-				"Headers: " + this.headers.toString();	
+		return  "<br>Host: "+ this.host + 
+				"<br>Method: "+ this.method.name() +
+				"<br>Body: " + this.body + 
+				"<br>Headers: " + this.headers.toString();	
 	}
 }

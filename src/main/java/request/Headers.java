@@ -4,6 +4,10 @@ public class Headers {
 	private ContentType contentType;
 	private String authorization;
 	
+	// private String host;
+	// private Method method;
+	// TODO add more headers here or we can use a map
+	
 	public String getAuthorization() {
 		return authorization;
 	}
@@ -22,6 +26,6 @@ public class Headers {
 	
 	@Override
 	public String toString() {
-		return "Content-Type: " +this.contentType.name() + '\n' + ", Authorization: " +this.authorization;
+		return "Content-Type: " + this.contentType + "\r\n";
 	}
 }

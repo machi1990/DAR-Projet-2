@@ -7,8 +7,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
+import request.ContentType;
+import request.Headers;
 import request.Request;
+import response.Response;
+import response.Status;
 
+/**
+ * A thread for each connection
+ */
 public class Server implements Runnable {
 	private Socket socket;
 
@@ -30,7 +37,6 @@ public class Server implements Runnable {
 			String stringRequest = "";
 			try {
 				if(((s = in.readLine()) != null)) {
-					System.out.println(s);
 					stringRequest += s + "\n";
 					parser = s.split(" ");
 					request.setMethod(parser[0]);
@@ -48,6 +54,7 @@ public class Server implements Runnable {
 						break;
 					case "Connection" :
 						// Connection: keep-alive
+						request.setBody(parser[1]);
 						break;
 					case "User-Agent":
 						// User-Agent: Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36
@@ -68,19 +75,20 @@ public class Server implements Runnable {
 						//Referer: http://localhost:20000/
 						break;
 					default :
+						Headers headers = new Headers();
+						headers.setAuthorization("");
+						headers.setContentType(ContentType.JSON);
+						request.setHeaders(headers);
 					}
 				}
 
-				System.out.println(stringRequest);
-				out.write("HTTP/1.1 200 OK\r\n");
-				out.write("Date: Fri, 31 Dec 1999 23:59:59 GMT\r\n");
-				out.write("Server: Apache/0.8.4\r\n");
-				out.write("Content-Type: text/html\r\n");
-				out.write("Expires: Sat, 01 Jan 2000 00:59:59 GMT\r\n");
-				out.write("\r\n");
-				out.write("<TITLE>Exemple</TITLE>");
-				out.write("<p>Ceci est votre requete :</p>");
-				out.write("<P>"+stringRequest.replaceAll("\n", "<BR/>")+"</P>");
+				Response response = Response.response(Status.OK);				
+				response.build("<TITLE>Exemple</TITLE>");
+				response.build("<p>Ceci est votre requete :</p>");
+				response.build("<P>"+stringRequest.replaceAll("\n", "<BR/>")+"</P>");
+				
+				out.write(response.toString());
+				
 				System.err.println("Client connexion closed");
 				out.close();
 				in.close();

@@ -5,9 +5,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class HttpServerRequest {
+	public static final String ServerName = "HomeMade/0.0.1\r\n";
+	
 	private Integer port;
 	private boolean started = false;
-
+	
 	private HttpServerRequest() {
 		this.port = 20000;
 	}

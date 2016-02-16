@@ -1,50 +1,37 @@
 package response;
 
+import java.util.Date;
+
 import request.Headers;
-import request.Method;
+import server.HttpServerRequest;
 
 public class Response {
-	private String host;
-	private String body;
-	private Method method;
+	private StringBuilder body;
 	private Headers headers;
+	private Status status;
 	
 	public Response() {
 		super();
 	}
 	
-	public Response(String host, String body, Method method, Headers headers) {
+	public Response(Status status,Headers headers) {
 		super();
-		this.host = host;
-		this.body = body;
-		this.method = method;
+		this.status = status;
 		this.headers = headers;
 	}
 	
-	public String getHost() {
-		return host;
-	}
-	
-	public void setHost(String host) {
-		this.host = host;
+	public Response(Status status) {
+		this(status,null);
 	}
 	
 	public String getBody() {
-		return body;
+		return body.toString();
 	}
 	
-	public void setBody(String body) {
+	public void setBody(StringBuilder body) {
 		this.body = body;
 	}
-	
-	public Method getMethod() {
-		return method;
-	}
-	
-	public void setMethod(Method method) {
-		this.method = method;
-	}
-	
+		
 	public Headers getHeaders() {
 		return headers;
 	}
@@ -53,12 +40,48 @@ public class Response {
 		this.headers = headers;
 	}
 	
+	
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
+	}
+	
+	public void build(Object object) {
+		if (this.body == null) {
+			this.body = new StringBuilder();
+		} 
+		
+		this.body.append(object.toString());
+	}
+	
+	public void write() {
+		if (this.body == null) {
+			this.body = new StringBuilder("");
+		} 
+		
+		String result =  this.toString();	
+		System.out.println(result);
+		
+		// TODO writer.write(result);
+	}
+
 	@Override
 	public String toString() {
-		return "Host: "+ this.host + 
-				"Method: "+ this.method.name() +
-				" Body: " + this.body + 
-				" Headers: " + this.headers.toString();	
+		long now = new Date().getTime(),expires = now + 100000000 + (long)(Math.random()*1000)	;
+		
+		String header =  status +"Date: " + new Date(now).toString() + "\r\n" +
+		 "Server: " + HttpServerRequest.ServerName + 
+		 "Expires: " + new Date(expires).toString() +"\r\n"+
+		 ((this.headers == null) ? "Content-Type: text/html \r\n":this.headers.toString());
+		
+		return header + "\r\n" +this.body; 
+	}
+	
+	public static Response response(Status status) {
+		return new Response(status);
 	}
 	
 }
