@@ -13,10 +13,11 @@ public enum Status {
 	FORBIDDEN,
 	NOT_FOUND,
 	INTERNAL_SERVER_ERROR,
-	NOT_IMPLEMENTED;
+	NOT_IMPLEMENTED, 
+	UNAUTHORIZED;
 	
 	
-	private static Map<Status, Map<String, String>> map;
+	private static final Map<Status, Map<String, String>> map;
 	
 	static {
 		map = new HashMap<>();
@@ -27,14 +28,57 @@ public enum Status {
 		
 		mapped = new HashMap<>();
 		mapped.put("status_code", "201");
-		mapped.put("text","CREATED");
+		mapped.put("text","Created");
 		map.put(CREATED,mapped);
+		
+		mapped = new HashMap<>();
+		mapped.put("status_code", "202");
+		mapped.put("text","Accepted");
+		map.put(ACCEPTED,mapped);
+		
+		mapped = new HashMap<>();
+		mapped.put("status_code", "204");
+		mapped.put("text","No Content");
+		map.put(NO_CONTENT,mapped);
+
+		mapped = new HashMap<>();
+		mapped.put("status_code", "302");
+		mapped.put("text","Found");
+		map.put(FOUND,mapped);
+		
+		mapped = new HashMap<>();
+		mapped.put("status_code", "400");
+		mapped.put("text","Bad Request");
+		map.put(BAD_REQUEST,mapped);
 		
 
 		mapped = new HashMap<>();
+		mapped.put("status_code", "401");
+		mapped.put("text","Unauthorized");
+		map.put(UNAUTHORIZED,mapped);
+		
+
+		mapped = new HashMap<>();
+		mapped.put("status_code", "403");
+		mapped.put("text","Forbidden");
+		map.put(FORBIDDEN,mapped);
+		
+
+		mapped = new HashMap<>();
+		mapped.put("status_code", "404");
+		mapped.put("text","Not Found");
+		map.put(NOT_FOUND,mapped);
+		
+		mapped = new HashMap<>();
 		mapped.put("status_code", "501");
-		mapped.put("text","NOT IMPLEMENTED");
+		mapped.put("text","Not Implemented");
 		map.put(NOT_IMPLEMENTED,mapped);
+		
+
+		mapped = new HashMap<>();
+		mapped.put("status_code", "500");
+		mapped.put("text","Internal Server Error");
+		map.put(INTERNAL_SERVER_ERROR,mapped);
 		
 		// TODO the rest
 	}

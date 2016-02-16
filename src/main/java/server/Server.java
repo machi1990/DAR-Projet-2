@@ -82,7 +82,7 @@ public class Server implements Runnable {
 					}
 				}
 
-				Response response = Response.response(Status.OK);				
+				Response response = Response.response(Status.UNAUTHORIZED);				
 				response.build("<TITLE>Exemple</TITLE>");
 				response.build("<p>Ceci est votre requete :</p>");
 				response.build("<P>"+stringRequest.replaceAll("\n", "<BR/>")+"</P>");
