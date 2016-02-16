@@ -88,7 +88,7 @@ public class Server implements Runnable {
 				response.build("<P>"+stringRequest.replaceAll("\n", "<BR/>")+"</P>");
 				
 				out.write(response.toString());
-				
+				System.out.println(stringRequest);
 				System.err.println("Client connexion closed");
 				out.close();
 				in.close();
