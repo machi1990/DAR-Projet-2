@@ -53,4 +53,12 @@ public class Response {
 		this.headers = headers;
 	}
 	
+	@Override
+	public String toString() {
+		return "Host: "+ this.host + 
+				"Method: "+ this.method.name() +
+				" Body: " + this.body + 
+				" Headers: " + this.headers.toString();	
+	}
+	
 }
