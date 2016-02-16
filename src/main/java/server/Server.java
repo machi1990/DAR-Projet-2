@@ -1,4 +1,4 @@
-package ServerHttp;
+package server;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -29,11 +29,16 @@ public class Server implements Runnable {
 	        String parser[];
 	        String stringRequest = "";
             try {
+            	if (!in.ready()) {
+            		return;
+            	}
+            	
             	s = in.readLine();
             	System.out.println(s);
             	stringRequest += s + "\n";
             	parser = s.split(" ");
 		    	request.setMethod(parser[0]);
+		    	
 		    	
 		    	//parser[1]; "/index" and parser[2]; "HTTP/1.1"
 				while ((s = in.readLine()) != null) {
@@ -41,6 +46,7 @@ public class Server implements Runnable {
 					if (s.isEmpty()) {
 		                break;
 		            }
+					
 				    parser = s.split(": ");
 				    switch(parser[0]){
 				    case "Host" :
