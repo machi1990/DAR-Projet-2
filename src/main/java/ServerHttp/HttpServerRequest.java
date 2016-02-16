@@ -55,16 +55,16 @@ public class HttpServerRequest {
 	        String stringRequest = "";
             try {
             	s = in.readLine();
+            	System.out.println(s);
             	stringRequest += s + "\n";
             	parser = s.split(" ");
 		    	request.setMethod(parser[0]);
 		    	//parser[1]; "/index" and parser[2]; "HTTP/1.1"
 				while ((s = in.readLine()) != null) {
-					
+	            	stringRequest += s + "\n";
 					if (s.isEmpty()) {
 		                break;
 		            }
-				    System.out.println(s);
 				    parser = s.split(": ");
 				    switch(parser[0]){
 				    case "Host" :
@@ -94,18 +94,18 @@ public class HttpServerRequest {
 				    default :
 				    }
 				}
-				
+
+			    System.out.println(stringRequest);
 		        out.write("HTTP/1.1 200 OK\r\n");
 		        out.write("Date: Fri, 31 Dec 1999 23:59:59 GMT\r\n");
 		        out.write("Server: Apache/0.8.4\r\n");
 		        out.write("Content-Type: text/html\r\n");
-		        out.write("Content-Length: 57\r\n");
 		        out.write("Expires: Sat, 01 Jan 2000 00:59:59 GMT\r\n");
-		        out.write("Last-modified: Fri, 09 Aug 1996 14:21:40 GMT\r\n");
 		        out.write("\r\n");
 		        out.write("<TITLE>Exemple</TITLE>");
-		        out.write("<P>Ceci est votre requete :</P>");
-		        out.write("<H2>"+stringRequest+"</H2>");
+		        out.write("<p>Ceci est votre requete :</p>");
+		        out.write("<P>"+stringRequest.replaceAll("\n", "<BR/>")+"</P>");
+		        
 		        System.err.println("Connexion avec le client terminée");
 		        out.close();
 		        in.close();
