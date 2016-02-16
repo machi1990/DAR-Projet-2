@@ -29,12 +29,12 @@ public class Server implements Runnable {
 			String parser[];
 			String stringRequest = "";
 			try {
-				s = in.readLine();
-				System.out.println(s);
-				stringRequest += s + "\n";
-				parser = s.split(" ");
-				request.setMethod(parser[0]);
-
+				if(((s = in.readLine()) != null)) {
+					System.out.println(s);
+					stringRequest += s + "\n";
+					parser = s.split(" ");
+					request.setMethod(parser[0]);
+				}
 				//parser[1]; "/index" and parser[2]; "HTTP/1.1"
 				while ((s = in.readLine()) != null) {
 					stringRequest += s + "\n";
