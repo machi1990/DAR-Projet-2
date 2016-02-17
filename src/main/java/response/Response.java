@@ -2,6 +2,8 @@ package response;
 
 import java.util.Date;
 
+import javafx.util.Pair;
+import request.Cookie;
 import request.Headers;
 import server.HttpServerRequest;
 
@@ -75,6 +77,8 @@ public class Response {
 		String header =  status +"Date: " + new Date(now).toString() + "\r\n" +
 		 "Server: " + HttpServerRequest.ServerName + 
 		 "Expires: " + new Date(expires).toString() +"\r\n"+
+		 "Set-" + new Cookie(new Pair<String, String>("LSID", "DQAAAK…Eaem_vYg")) + 
+		 "Set-" + new Cookie(new Pair<String, String>("HELLO", "DQAAghjsgfhgsjhdgEaem_vYg")) + 
 		 ((this.headers == null) ? "Content-Type: text/html \r\n":this.headers.toString());
 		
 		return header + "\r\n" +this.body; 
@@ -82,6 +86,41 @@ public class Response {
 	
 	public static Response response(Status status) {
 		return new Response(status);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((body == null) ? 0 : body.hashCode());
+		result = prime * result + ((headers == null) ? 0 : headers.hashCode());
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object object) {
+		if (this == object)
+			return true;
+		if (object == null)
+			return false;
+		if (getClass() != object.getClass())
+			return false;
+		
+		Response response = (Response) object;
+		if (body == null) {
+			if (response.body != null)
+				return false;
+		} else if (!body.equals(response.body))
+			return false;
+		if (headers == null) {
+			if (response.headers != null)
+				return false;
+		} else if (!headers.equals(response.headers))
+			return false;
+		if (status != response.status)
+			return false;
+		return true;
 	}
 	
 }

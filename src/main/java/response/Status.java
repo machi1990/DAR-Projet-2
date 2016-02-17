@@ -2,6 +2,7 @@ package response;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public enum Status {
 	OK,
@@ -20,7 +21,7 @@ public enum Status {
 	private static final Map<Status, Map<String, String>> map;
 	
 	static {
-		map = new HashMap<>();
+		map = new ConcurrentHashMap<>();
 		Map<String, String> mapped= new HashMap<>();
 		mapped.put("status_code","200");
 		mapped.put("text", "OK");

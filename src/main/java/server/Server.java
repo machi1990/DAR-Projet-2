@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
-import request.ContentType;
 import request.Headers;
 import request.Request;
 import response.Response;
@@ -40,11 +39,11 @@ public class Server implements Runnable {
 					stringRequest += s + "\n";
 					parser = s.split(" ");
 					request.setMethod(parser[0]);
+				} else {
+					return;
 				}
 				
 				Headers headers = new Headers();
-				headers.setAuthorization("");
-				headers.setContentType(ContentType.PLAIN);
 				request.setHeaders(headers);
 				
 				//parser[1]; "/index" and parser[2]; "HTTP/1.1"
@@ -53,44 +52,14 @@ public class Server implements Runnable {
 					if (s.isEmpty()) {
 						break;
 					}
+					
 					parser = s.split(": ");
 					switch(parser[0]){
-					case "Host" :
-						request.setHost(parser[1]);
+					case "Body":
+						System.out.println(s);
 						break;
-					case "Connection" :
-						// Connection: keep-alive
-						request.setBody(parser[1]);
-						break;
-					case "User-Agent":
-						// User-Agent: Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36
-						break;
-					case "Content-Type":
-						if (parser[1].contains("html")) {
-							headers.setContentType(ContentType.HTML);
-						} else if (parser[1].contains("json")) {
-							headers.setContentType(ContentType.JSON);
-						}
-						break;
-					case "Upgrade-Insecure-Requests":
-						// Upgrade-Insecure-Requests: 1
-						break;
-					case "Accept-Encoding":
-						// Accept-Encoding: gzip, deflate, sdch
-						break;
-					case "Accept-Language":
-						// Accept-Language: fr-FR,fr;q=0.8,en-US;q=0.6,en;q=0.4
-						break;
-					case "Referer":
-						//Referer: http://localhost:20000/
-						break;
-					case "Accept":
-						// Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
-						break;
-					case "Authorization":
-						headers.setAuthorization(parser[1]);
-						break;	
 					default :
+						headers.put(parser[0], parser[1]);
 						break;
 					}
 				}
@@ -112,6 +81,31 @@ public class Server implements Runnable {
 		}
 
 
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((socket == null) ? 0 : socket.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object object) {
+		if (this == object)
+			return true;
+		if (object == null)
+			return false;
+		if (getClass() != object.getClass())
+			return false;
+		Server server = (Server) object;
+		if (socket == null) {
+			if (server.socket != null)
+				return false;
+		} else if (!socket.equals(server.socket))
+			return false;
+		return true;
 	}
 
 }
