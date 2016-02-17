@@ -171,18 +171,18 @@ public class Cookie {
 
 	@Override
 	public String toString() {
-		String cookie =  "Cookie: "+ cookieValue.getKey() + "="+ cookieValue.getValue() +"; ";
+		String cookie =  "Cookie: "+ cookieValue.getKey() + "="+ cookieValue.getValue();
 		
 		if (path != null) {
-			cookie += "Path =" + path + ";";
+			cookie += "; Path =" + path;
 		}
 		
 		if (expires != null) {
-			cookie += "Expires =" + expires + "; ";
+			cookie += "; Expires =" + expires;
 		}
 		
 		if (domain != null) {
-			cookie += "Domain =" + domain + "; ";
+			cookie += "; Domain =" + domain;
 		}
 		
 		// TODO rest here

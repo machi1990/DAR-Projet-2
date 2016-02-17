@@ -1,5 +1,6 @@
 package request;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -62,6 +63,8 @@ public class Request {
 	
 	private String jsonify() {
 		ObjectMapper mapper = new ObjectMapper();
+		mapper.setSerializationInclusion(Include.NON_NULL);
+		
 		try {
 			return mapper.writeValueAsString(this);
 		} catch (JsonProcessingException e) {
