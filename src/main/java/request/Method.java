@@ -5,5 +5,8 @@ public enum Method {
 	GET,
 	PUT,
 	PATCH,
-	DELETE
+	DELETE,
+	HEAD,
+	CONNECT,
+	OPTIONS
 }

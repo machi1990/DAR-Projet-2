@@ -4,17 +4,17 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class HttpServerRequest {
+public class HttpServer {
 	public static final String ServerName = "HomeMade/0.0.1\r\n";
 	
 	private Integer port;
 	private boolean started = false;
 	
-	private HttpServerRequest() {
+	private HttpServer() {
 		this.port = 20000;
 	}
 
-	private HttpServerRequest(Integer port) {
+	private HttpServer(Integer port) {
 		this.port = 20000;
 
 		if (port > 10000 && port < 60000) {
@@ -38,7 +38,7 @@ public class HttpServerRequest {
 			try {
 				socket = server.accept();
 				System.err.println("New client connected");
-				new Thread( new Server(socket)).start();
+				new Thread( new Connection(socket)).start();
 			} catch (IOException e1) {
 				e1.printStackTrace();
 				this.started = false;
@@ -49,7 +49,7 @@ public class HttpServerRequest {
 
 	public static void main(String[] args) throws IOException{
 		int port = 20000;		
-		HttpServerRequest server = new HttpServerRequest(port);
+		HttpServer server = new HttpServer(port);
 		server.start();
 	}
 }

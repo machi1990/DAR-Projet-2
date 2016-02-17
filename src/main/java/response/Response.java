@@ -3,17 +3,21 @@ package response;
 import java.util.Date;
 
 import javafx.util.Pair;
+import request.ContentType;
 import request.Cookie;
 import request.Headers;
-import server.HttpServerRequest;
+import server.HttpServer;
 
+/**
+ * TODO
+ */
 public class Response {
 	private StringBuilder body;
 	private Headers headers;
 	private Status status;
 	
 	public Response() {
-		super();
+		this(Status.OK,new Headers());
 	}
 	
 	public Response(Status status,Headers headers) {
@@ -23,7 +27,7 @@ public class Response {
 	}
 	
 	public Response(Status status) {
-		this(status,null);
+		this(status,new Headers());
 	}
 	
 	public String getBody() {
@@ -51,6 +55,10 @@ public class Response {
 		this.status = status;
 	}
 	
+	public void setContentType(ContentType type) {
+		this.headers.put("Content-Type", type.toString());
+	}
+	
 	public void build(Object object) {
 		if (this.body == null) {
 			this.body = new StringBuilder();
@@ -75,7 +83,7 @@ public class Response {
 		long now = new Date().getTime(),expires = now + 100000000 + (long)(Math.random()*1000)	;
 		
 		String header =  status +"Date: " + new Date(now).toString() + "\r\n" +
-		 "Server: " + HttpServerRequest.ServerName + 
+		 "Server: " + HttpServer.ServerName + 
 		 "Expires: " + new Date(expires).toString() +"\r\n"+
 		 "Set-" + new Cookie(new Pair<String, String>("LSID", "DQAAAK…Eaem_vYg")) + 
 		 "Set-" + new Cookie(new Pair<String, String>("HELLO", "DQAAghjsgfhgsjhdgEaem_vYg")) + 

@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javafx.util.Pair;
-
+/**
+ *
+ */
 public class Cookie {
 
 	private String path;
@@ -102,12 +104,12 @@ public class Cookie {
 	}
 
 
-	public Pair<String,String> getValue() {
-		return cookieValue;
+	public String getValue() {
+		return cookieValue.getValue();
 	}
 
 	public String cookieKey() {
-		return getValue().getKey();
+		return cookieValue.getKey();
 	}
 	
 	public void setValue(Pair<String,String> value) {

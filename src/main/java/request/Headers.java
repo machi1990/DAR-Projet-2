@@ -14,8 +14,6 @@ public class Headers {
 	public void put(String header,String value) {
 		if (header.equals("Content-Type") || header.equals("Accept")) {
 			setContentType(value);
-		} else if (header.equals("Cookie")) {
-			this.headers.put(header, Cookie.fromString(value));
 		} else {
 			this.headers.put(header, value);
 		}
@@ -44,23 +42,11 @@ public class Headers {
 		return headers;
 	}
 
-	/**
-	 * TODO Cookie treatment
-	 */
 	@Override
 	public String toString() {
 		String headers = "";
 		
 		for (String header: this.headers.keySet()) {
-			if (header.equals("Cookie")) {
-				@SuppressWarnings("unchecked")
-				Map<String,Cookie> cookies = (Map<String,Cookie>) this.headers.get(header);
-				for (String cookie:cookies.keySet()) {
-					headers +=cookies.get(cookie);  
-				}
-				continue;
-			} 
-			
 			headers += header + ": "+ this.headers.get(header).toString() + "\r\n"; 
 		}
 		
