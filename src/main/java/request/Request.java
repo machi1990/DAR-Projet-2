@@ -1,5 +1,8 @@
 package request;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class Request {
 	private String host;
 	private String body;
@@ -52,9 +55,49 @@ public class Request {
 	
 	@Override
 	public String toString() {
-		return  "<br>Host: "+ this.host + 
-				"<br>Method: "+ this.method.name() +
-				"<br>Body: " + this.body + 
-				"<br>Headers: " + this.headers.toString();	
+		
+		ContentType type = this.headers != null ? this.headers.getContentType() : ContentType.PLAIN;
+		
+		switch (type) {
+		case HTML: 
+			return htmlify();
+		case JSON:
+			return jsonify();
+		default:
+			return  "<br>Host: "+ this.host + 
+					"<br>Method: "+ this.method.name() +
+					"<br>Body: " + this.body + 
+					"<br>Headers: " + this.headers.toString();
+		}
+	}
+	
+	private String jsonify() {
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			return mapper.writeValueAsString(this);
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "{}";
+		}
+	}
+	
+	private String htmlify() {
+		String html = "<table border=\"1\" style=\"width:100%\">"
+				+ "<thead><tr> "
+				+ "<th> HOST </th>"
+				+ "<th> METHOD </th>"
+				+ "<th> HEADERS </th>"
+				+ "<th> BODY </th>"
+				+ "</tr></thead>"
+				+ "<tbody><tr>"
+				+ "<td>"+this.host+"</td>"
+				+ "<td>"+this.method+"</td>"
+				+ "<td>"+this.body+"</td>"
+				+ "<td>"+this.headers.toString()+"</td>"
+				+ "</tr><tbody>"
+				+ "</table>";
+		
+		return html;
 	}
 }

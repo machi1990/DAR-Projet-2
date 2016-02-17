@@ -41,6 +41,12 @@ public class Server implements Runnable {
 					parser = s.split(" ");
 					request.setMethod(parser[0]);
 				}
+				
+				Headers headers = new Headers();
+				headers.setAuthorization("");
+				headers.setContentType(ContentType.PLAIN);
+				request.setHeaders(headers);
+				
 				//parser[1]; "/index" and parser[2]; "HTTP/1.1"
 				while ((s = in.readLine()) != null) {
 					stringRequest += s + "\n";
@@ -59,8 +65,12 @@ public class Server implements Runnable {
 					case "User-Agent":
 						// User-Agent: Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.109 Safari/537.36
 						break;
-					case "Accept":
-						// Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+					case "Content-Type":
+						if (parser[1].contains("html")) {
+							headers.setContentType(ContentType.HTML);
+						} else if (parser[1].contains("json")) {
+							headers.setContentType(ContentType.JSON);
+						}
 						break;
 					case "Upgrade-Insecure-Requests":
 						// Upgrade-Insecure-Requests: 1
@@ -74,18 +84,19 @@ public class Server implements Runnable {
 					case "Referer":
 						//Referer: http://localhost:20000/
 						break;
+					case "Accept":
+						// Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+						break;
+					case "Authorization":
+						headers.setAuthorization(parser[1]);
+						break;	
 					default :
-						Headers headers = new Headers();
-						headers.setAuthorization("");
-						headers.setContentType(ContentType.JSON);
-						request.setHeaders(headers);
+						break;
 					}
 				}
 
 				Response response = Response.response(Status.UNAUTHORIZED);				
-				response.build("<TITLE>Exemple</TITLE>");
-				response.build("<p>Ceci est votre requete :</p>");
-				response.build("<P>"+stringRequest.replaceAll("\n", "<BR/>")+"</P>");
+				response.build(request);
 				
 				out.write(response.toString());
 				System.out.println(stringRequest);
