@@ -93,7 +93,6 @@ public class Request {
 		try {
 			return mapper.writeValueAsString(this);
 		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return "{}";
 		}

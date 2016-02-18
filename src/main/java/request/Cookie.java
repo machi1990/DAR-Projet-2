@@ -208,7 +208,7 @@ public class Cookie {
 		
 		for (String _cookie: _cookies) {
 			cookie_ = new Cookie(_cookie);
-			cookies.put(cookie_.cookieKey(),new Cookie(_cookie));
+			cookies.put(cookie_.cookieKey(),cookie_);
 		}
 		
 		return cookies;
