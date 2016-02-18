@@ -8,6 +8,8 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
+import exceptions.BadInputException;
+import request.ContentType;
 import request.Headers;
 import request.Request;
 import response.Response;
@@ -24,22 +26,30 @@ public class Connection implements Runnable {
 	}
 
 	public void run() {
+		BufferedWriter writer = null;
+		
 		try {
 			socket.setSoTimeout(1);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
 			Request request = new Request();
+			Response response;
 			String stringRequest = readInput(reader);
 			
-			afterInputRetrieved(stringRequest, request);
+			try {
+				afterInputRetrieved(stringRequest, request);
+				
+				response = Response.response(Status.OK);
+				response.setContentType(request.getHeaders().ContentType());
+				response.build(request);
+			} catch (BadInputException e) {
+				response = Response.response(Status.NOT_FOUND);
+				response.setContentType(ContentType.PLAIN);
+				response.build("Null request");
+			}
 
-			Response response = Response.response(Status.UNAUTHORIZED);
-			response.setContentType(request.getHeaders().ContentType());
-
-			response.build(request);
 			writer.write(response.toString());
-			
 			System.err.println("Client connexion closed");
 
 			writer.flush();
@@ -67,12 +77,12 @@ public class Connection implements Runnable {
 		return builder.toString();
 	}
 
-	private void afterInputRetrieved(String input, Request request) throws IOException {
+	private void afterInputRetrieved(String input, Request request) throws BadInputException {
 		String[] inputs = input.split("\r\n");
 		Headers headers = new Headers();
 
 		if(input.isEmpty()){
-			throw new IOException();
+			throw new BadInputException();
 		}
 
 		request.setMethod(inputs[0].split(" ")[0]);
