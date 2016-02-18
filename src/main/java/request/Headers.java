@@ -12,9 +12,11 @@ public class Headers {
 	
 	
 	public void put(String header,String value) {
-		if (header.equals("Content-Type") || header.equals("Accept")) {
+		if (header.equals("Content-Type")) {
 			setContentType(value);
-		} else {
+		} else if (header.equals("Accept") && ContentType() == null) {
+			setContentType(value);
+		}else {
 			this.headers.put(header, value);
 		}
 	}
