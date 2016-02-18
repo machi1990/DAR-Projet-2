@@ -40,6 +40,10 @@ public class Request {
 		return cookies;
 	}
 
+	public Cookie getCookie (String key) {
+		return cookies.get(key);
+	}
+	
 	public void setCookies(Map<String, Cookie> cookies) {
 		this.cookies = cookies;
 	}
