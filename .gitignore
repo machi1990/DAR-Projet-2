@@ -2,3 +2,5 @@
 .idea/
 .settings/
 Projet2.iml
+.classpath
+bin/
