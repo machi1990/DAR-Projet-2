@@ -48,7 +48,7 @@ public class Connection implements Runnable {
 			socket.close();
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Error in Connection.run()");
 		}
 	}
 
@@ -67,9 +67,13 @@ public class Connection implements Runnable {
 		return builder.toString();
 	}
 
-	private void afterInputRetrieved(String input, Request request) {
+	private void afterInputRetrieved(String input, Request request) throws IOException {
 		String[] inputs = input.split("\r\n");
 		Headers headers = new Headers();
+
+		if(input.isEmpty()){
+			throw new IOException();
+		}
 
 		request.setMethod(inputs[0].split(" ")[0]);
 
