@@ -71,7 +71,7 @@ public class Request {
 	@Override
 	public String toString() {
 		
-		ContentType type = this.headers != null ? this.headers.ContentType() : ContentType.PLAIN;
+		ContentType type = this.headers != null ? this.headers.contentType() : ContentType.PLAIN;
 		
 		switch (type) {
 		case HTML: 

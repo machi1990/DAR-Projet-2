@@ -1,6 +1,9 @@
 package response;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javafx.util.Pair;
 import request.ContentType;
@@ -15,6 +18,7 @@ public class Response {
 	private StringBuilder body;
 	private Headers headers;
 	private Status status;
+	private Map<String,Cookie> cookies = new HashMap<>();
 	
 	public Response() {
 		this(Status.OK,new Headers());
@@ -59,6 +63,23 @@ public class Response {
 		this.headers.put("Content-Type", type.toString());
 	}
 	
+	
+	public Map<String, Cookie> getCookies() {
+		return Collections.unmodifiableMap(cookies);
+	}
+
+	public Cookie getCookie(String key) {
+		return cookies.get(key);
+	}
+	
+	public void setCookies(Map<String, Cookie> cookies) {
+		this.cookies = cookies;
+	}
+	
+	public void setCookie(String key, String value) {
+		cookies.put(key, new Cookie(new Pair<String, String>(key, value)));
+	}
+
 	public void build(Object object) {
 		if (this.body == null) {
 			this.body = new StringBuilder();
@@ -85,11 +106,19 @@ public class Response {
 		String header =  status +"Date: " + new Date(now).toString() + "\r\n" +
 		 "Server: " + HttpServer.ServerName + 
 		 "Expires: " + new Date(expires).toString() +"\r\n"+
-		 "Set-" + new Cookie(new Pair<String, String>("LSID", "DQAAAK…Eaem_vYg")) + 
-		 "Set-" + new Cookie(new Pair<String, String>("HELLO", "DQAAghjsgfhgsjhdgEaem_vYg")) + 
+		 stringifyCookie() + 
 		 ((this.headers == null) ? "Content-Type: text/html \r\n":this.headers.toString());
 		
 		return header + "\r\n" +this.body; 
+	}
+	
+	private String stringifyCookie() {
+		StringBuilder result = new StringBuilder();
+		for (String key:cookies.keySet()) {
+			result.append("Set-"+ cookies.get(key)+"\r\n"); 
+		}
+		
+		return result.toString();
 	}
 	
 	public static Response response(Status status) {
@@ -130,5 +159,6 @@ public class Response {
 			return false;
 		return true;
 	}
+	
 	
 }

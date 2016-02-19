@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Headers {
-	// private String host;
-	// private Method method;
 	// TODO add more headers here or we can use a map
 	
 	private Map<String,Object> headers = new HashMap<>();
@@ -14,14 +12,15 @@ public class Headers {
 	public void put(String header,String value) {
 		if (header.equals("Content-Type")) {
 			setContentType(value);
-		} else if (header.equals("Accept") && ContentType() == null) {
+		} else if (header.equals("Accept") && contentType() == null) {
 			setContentType(value);
+			this.put(header, value);
 		}else {
 			this.headers.put(header, value);
 		}
 	}
 	
-	public ContentType ContentType() {
+	public ContentType contentType() {
 		return (ContentType) this.headers.get("Content-Type");
 	}
 	

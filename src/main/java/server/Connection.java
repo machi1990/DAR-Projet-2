@@ -41,7 +41,7 @@ public class Connection implements Runnable {
 				afterInputRetrieved(stringRequest, request);
 				
 				response = Response.response(Status.OK);
-				response.setContentType(request.getHeaders().ContentType());
+				response.setContentType(request.getHeaders().contentType());
 				response.build(request);
 			} catch (BadInputException e) {
 				response = Response.response(Status.NOT_FOUND);
