@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
 	ElementType.TYPE,
 	ElementType.METHOD
 })
-public @interface Path {
-	public String path();
+public @interface PATH {
+	String value();
 }

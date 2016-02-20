@@ -4,10 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Headers {
-	// TODO add more headers here or we can use a map
-	
 	private Map<String,Object> headers = new HashMap<>();
 	
+	public Headers() {
+		super();
+	}
+
+	public Headers(Map<String, Object> headers) {
+		super();
+		this.headers = headers;
+	}
 	
 	public void put(String header,String value) {
 		if (header.equals("Content-Type")) {
@@ -52,5 +58,31 @@ public class Headers {
 		}
 		
 		return headers;
+	}
+	
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((headers == null) ? 0 : headers.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Headers headers_ = (Headers) obj;
+		if (headers == null) {
+			if (headers_.headers != null)
+				return false;
+		} else if (!headers.equals(headers_.headers))
+			return false;
+		return true;
 	}
 }

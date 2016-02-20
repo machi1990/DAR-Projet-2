@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Request {
+	private String resourceUrl;
 	private String body;
 	private Method method;
 	private Headers headers;
@@ -68,6 +69,15 @@ public class Request {
 		this.headers = headers;
 	}
 	
+
+	public String getResourceUrl() {
+		return resourceUrl;
+	}
+
+	public void setResourceUrl(String resourceUrl) {
+		this.resourceUrl = resourceUrl;
+	}
+	
 	@Override
 	public String toString() {
 		
@@ -79,7 +89,8 @@ public class Request {
 		case JSON:
 			return jsonify();
 		default:
-			return  "Method: "+ this.method.name() +
+			return  "Method: "+ this.method.name() + " "+
+					"Url: "+ this.resourceUrl +
 					(hasBody() ? "Body: " + this.body:"") + 
 					"Cookies: "+this.stringfyCookies()+
 					"Headers: " + this.headers.toString();
@@ -102,12 +113,14 @@ public class Request {
 		String html = "<table border=\"1\" style=\"width:100%\">"
 				+ "<thead><tr> "
 				+ "<th> METHOD </th>"
+				+ "<th> URL </th>"
 				+ "<th> HEADERS </th>"
 				+ "<th> COOKIES</th>"
 				+ (hasBody() ?"<th> BODY </th>":"")
 				+ "</tr></thead>"
 				+ "<tbody><tr>"
 				+ "<td>"+this.method+"</td>"
+				+ "<td>"+this.resourceUrl+"</td>"
 				+ "<td>"+this.headers.toString()+"</td>"
 				+ "<td>"+this.stringfyCookies().replaceAll("\r\n", "<br>")+"</td>"
 				+ (hasBody() ?"<td>"+this.body+"</td>":"")
@@ -115,6 +128,52 @@ public class Request {
 				+ "</table>";
 		
 		return html;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((body == null) ? 0 : body.hashCode());
+		result = prime * result + ((cookies == null) ? 0 : cookies.hashCode());
+		result = prime * result + ((headers == null) ? 0 : headers.hashCode());
+		result = prime * result + ((method == null) ? 0 : method.hashCode());
+		result = prime * result + ((resourceUrl == null) ? 0 : resourceUrl.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Request request = (Request) obj;
+		if (body == null) {
+			if (request.body != null)
+				return false;
+		} else if (!body.equals(request.body))
+			return false;
+		if (cookies == null) {
+			if (request.cookies != null)
+				return false;
+		} else if (!cookies.equals(request.cookies))
+			return false;
+		if (headers == null) {
+			if (request.headers != null)
+				return false;
+		} else if (!headers.equals(request.headers))
+			return false;
+		if (method != request.method)
+			return false;
+		if (resourceUrl == null) {
+			if (request.resourceUrl != null)
+				return false;
+		} else if (!resourceUrl.equals(request.resourceUrl))
+			return false;
+		return true;
 	}
 
 	private boolean hasBody() {

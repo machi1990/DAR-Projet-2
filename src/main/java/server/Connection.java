@@ -85,8 +85,10 @@ public class Connection implements Runnable {
 			throw new BadInputException();
 		}
 
-		request.setMethod(inputs[0].split(" ")[0]);
-
+		String[] methodUrlContainer = inputs[0].split(" ");
+		request.setMethod(methodUrlContainer[0]);
+		request.setResourceUrl(methodUrlContainer[1]);
+		
 		for (int i = 1; i < inputs.length - 1; ++i) {
 			parse(inputs[i], request, headers);
 		}
