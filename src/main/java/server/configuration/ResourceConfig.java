@@ -1,10 +1,10 @@
 package server.configuration;
 
-import java.util.HashMap;
+import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.reflections.Reflections;
@@ -19,9 +19,8 @@ import server.annotation.PATH;
 
 public class ResourceConfig {
 	private static final List<ClassLoader> classLoadersList;
-	private Map<String, Resource> configuration = new HashMap<>();
-	private Set<Class<?>> classes;
-
+	private Set<Class<?>> classes = new HashSet<>();
+	
 	static {
 		classLoadersList = new LinkedList<ClassLoader>();
 		classLoadersList.add(ClasspathHelper.contextClassLoader());
@@ -30,15 +29,6 @@ public class ResourceConfig {
 
 	public ResourceConfig() {
 		super();
-		this.classes = new HashSet<>();
-	}
-
-	public Map<String, Resource> getConfiguration() {
-		return configuration;
-	}
-
-	public void setConfiguration(Map<String, Resource> configuration) {
-		this.configuration = configuration;
 	}
 
 	/**
@@ -96,11 +86,23 @@ public class ResourceConfig {
 		}
 	}
 
-	public Set<Class<?>> getClasses() {
-		return classes;
-	}
-
 	public void setClasses(Set<Class<?>> classes) {
 		this.classes = classes;
+	}
+
+	public Set<Resource> getResources() {
+		Set<Resource> resources = new HashSet<>();
+		
+		for (Class<?> clazz:classes) {
+			for (Method method: clazz.getDeclaredMethods()){
+				if (!Resource.hasLocalAnnotation(method)) {
+					continue;
+				}
+				
+				resources.add(new Resource(clazz, method));
+			}
+		}
+		
+		return Collections.unmodifiableSet(resources);
 	}
 }

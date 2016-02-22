@@ -3,10 +3,6 @@ package request;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 public class Request {
 	private String resourceUrl;
 	private String body;
@@ -80,56 +76,13 @@ public class Request {
 	
 	@Override
 	public String toString() {
-		
-		ContentType type = this.headers != null ? this.headers.contentType() : ContentType.PLAIN;
-		
-		switch (type) {
-		case HTML: 
-			return htmlify();
-		case JSON:
-			return jsonify();
-		default:
-			return  "Method: "+ this.method.name() + " "+
-					"Url: "+ this.resourceUrl +
-					(hasBody() ? "Body: " + this.body:"") + 
-					"Cookies: "+this.stringfyCookies()+
-					"Headers: " + this.headers.toString();
-		}
+		return  "Method: "+ this.method.name() + " "+
+				"Url: "+ this.resourceUrl +
+				(hasBody() ? "Body: " + this.body:" ") + 
+				"Cookies: "+this.stringfyCookies()+
+				"Headers: " + this.headers.toString();
 	}
 	
-	private String jsonify() {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.setSerializationInclusion(Include.NON_NULL);
-		
-		try {
-			return mapper.writeValueAsString(this);
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-			return "{}";
-		}
-	}
-	
-	private String htmlify() {
-		String html = "<table border=\"1\" style=\"width:100%\">"
-				+ "<thead><tr> "
-				+ "<th> METHOD </th>"
-				+ "<th> URL </th>"
-				+ "<th> HEADERS </th>"
-				+ "<th> COOKIES</th>"
-				+ (hasBody() ?"<th> BODY </th>":"")
-				+ "</tr></thead>"
-				+ "<tbody><tr>"
-				+ "<td>"+this.method+"</td>"
-				+ "<td>"+this.resourceUrl+"</td>"
-				+ "<td>"+this.headers.toString()+"</td>"
-				+ "<td>"+this.stringfyCookies().replaceAll("\r\n", "<br>")+"</td>"
-				+ (hasBody() ?"<td>"+this.body+"</td>":"")
-				+ "</tr><tbody>"
-				+ "</table>";
-		
-		return html;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -176,10 +129,11 @@ public class Request {
 		return true;
 	}
 
-	private boolean hasBody() {
+	public boolean hasBody() {
 		return this.body != null;
 	}
-	private String stringfyCookies() {
+	
+	public String stringfyCookies() {
 		String result = "";
 		
 		for (String key: cookies.keySet()) {

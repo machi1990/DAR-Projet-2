@@ -101,13 +101,11 @@ public class Response {
 
 	@Override
 	public String toString() {
-		long now = new Date().getTime(),expires = now + 100000000 + (long)(Math.random()*1000)	;
+		long now = new Date().getTime();
 		
-		String header =  status +"Date: " + new Date(now).toString() + "\r\n" +
-		 "Server: " + HttpServer.ServerName + 
-		 "Expires: " + new Date(expires).toString() +"\r\n"+
-		 stringifyCookie() + 
-		 ((this.headers == null) ? "Content-Type: text/html \r\n":this.headers.toString());
+		String header =  status +"Date: " + new Date(now)+ "\r\n" +
+		"Server: " + HttpServer.ServerName + 
+		stringifyCookie() + this.headers;
 		
 		return header + "\r\n" +this.body; 
 	}

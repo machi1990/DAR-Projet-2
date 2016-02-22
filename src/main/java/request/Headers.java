@@ -19,8 +19,7 @@ public class Headers {
 		if (header.equals("Content-Type")) {
 			setContentType(value);
 		} else if (header.equals("Accept") && contentType() == null) {
-			setContentType(value);
-			this.put(header, value);
+			this.headers.put(header, value);
 		}else {
 			this.headers.put(header, value);
 		}
@@ -30,14 +29,18 @@ public class Headers {
 		return (ContentType) this.headers.get("Content-Type");
 	}
 	
-	public void setContentType(String type) {
+	public void setContentType(ContentType type) {
+		this.headers.put("Content-Type",type);
+	}
+	
+	private void setContentType(String type) {
 		if (type == null) {
 			this.headers.put("Content-Type",ContentType.HTML);
 		}
 		
-		if (type.contains("html")) {
+		if (type.contains("/html")) {
 			this.headers.put("Content-Type",ContentType.HTML);
-		} else if (type.contains("json")) {
+		} else if (type.contains("/json")) {
 			this.headers.put("Content-Type",ContentType.JSON);
 		} else {
 			this.headers.put("Content-Type",ContentType.PLAIN);

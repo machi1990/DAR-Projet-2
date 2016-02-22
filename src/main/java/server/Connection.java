@@ -14,12 +14,14 @@ import request.Headers;
 import request.Request;
 import response.Response;
 import response.Status;
+import server.configuration.Dispatcher;
 
 /**
  * A thread for each connection
  */
 public class Connection implements Runnable {
 	private Socket socket;
+	private Dispatcher dispatcher = Dispatcher.dispatcher();
 
 	public Connection(Socket socket) {
 		this.socket = socket;
@@ -27,7 +29,7 @@ public class Connection implements Runnable {
 
 	public void run() {
 		BufferedWriter writer = null;
-		
+
 		try {
 			socket.setSoTimeout(1);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -36,13 +38,26 @@ public class Connection implements Runnable {
 			Request request = new Request();
 			Response response;
 			String stringRequest = readInput(reader);
-			
+
 			try {
 				afterInputRetrieved(stringRequest, request);
-				
-				response = Response.response(Status.OK);
+				/*response = Response.response(Status.OK);
 				response.setContentType(request.getHeaders().contentType());
-				response.build(request);
+				response.build(request); */
+				
+
+				/**
+				 * TODO Dispatch requests
+				 */
+				Object result = dispatcher.dispatch(request);
+				
+				if (result instanceof Response) {
+					response = (Response) result;
+				} else {
+					response = Response.response(Status.OK);
+					response.setContentType(request.getHeaders().contentType());
+					response.build(result);
+				}	
 			} catch (BadInputException e) {
 				response = Response.response(Status.NOT_FOUND);
 				response.setContentType(ContentType.PLAIN);
@@ -81,14 +96,14 @@ public class Connection implements Runnable {
 		String[] inputs = input.split("\r\n");
 		Headers headers = new Headers();
 
-		if(input.isEmpty()){
+		if (input.isEmpty()) {
 			throw new BadInputException();
 		}
 
 		String[] methodUrlContainer = inputs[0].split(" ");
 		request.setMethod(methodUrlContainer[0]);
 		request.setResourceUrl(methodUrlContainer[1]);
-		
+
 		for (int i = 1; i < inputs.length - 1; ++i) {
 			parse(inputs[i], request, headers);
 		}

@@ -3,10 +3,10 @@ package server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashSet;
 import java.util.Set;
 
-import application.Application;
+import server.configuration.Dispatcher;
+import server.configuration.Resource;
 import server.configuration.ResourceConfig;
 import server.configuration.ResourcesNotFoundException;
 
@@ -14,7 +14,7 @@ public class HttpServer {
 	public static final String ServerName = "HomeMade/0.0.1\r\n";
 	private Integer port;
 	private boolean started = false;
-	private Set<Class<?>> resources = new HashSet<>();
+	private Dispatcher dispatcher = Dispatcher.dispatcher();
 	
 	private HttpServer() {
 		this.port = 20000;
@@ -28,15 +28,11 @@ public class HttpServer {
 		}
 
 	}
-
-	public Set<Class<?>> getResources() {
-		return resources;
-	}
-
-	public void setResources(Set<Class<?>> resources) {
-		this.resources = resources;
-	}
 	
+	public void setResources(Set<Resource> resources) {
+		dispatcher.setResources(resources);
+	}
+
 	public void start() throws IOException {
 		if (started) {
 			System.err.println("Server already started");
@@ -47,6 +43,7 @@ public class HttpServer {
 		ServerSocket server = new ServerSocket(port);
 
 		System.out.println("Server started at "+ port);
+		
 		this.started = true;
 		while (true) {
 			try {
@@ -76,7 +73,7 @@ public class HttpServer {
 		 */
 				
 		HttpServer server = new HttpServer(port);
-		server.setResources(config.getClasses());
+		server.setResources(config.getResources());
 		server.start();
 	}
 	
@@ -91,7 +88,7 @@ public class HttpServer {
 		ResourceConfig config = new ResourceConfig();
 		config.packages("application");
 		
-		int port = 20000;
+		int port = 30000;
 		start(port,config);
 	}
 }
