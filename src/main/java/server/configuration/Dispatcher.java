@@ -22,6 +22,7 @@ public class Dispatcher {
 		for (Resource resource: resources) {
 			try {
 				result = resource.invoke(request);
+				break;
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException e) {
 				Response response = Response.response(Status.INTERNAL_SERVER_ERROR);
 				response.build(e.getMessage());

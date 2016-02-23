@@ -8,6 +8,7 @@ import java.util.Arrays;
 
 import request.ContentType;
 import request.Request;
+import request.UrlParameters;
 import response.Jsonfier;
 import response.Response;
 import response.Status;
@@ -103,9 +104,24 @@ public class Resource {
 	public Object invoke(Request request)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException, NotMatchedException {
 
-		if (!matches(request.getResourceUrl())) {
+		/*
+		 * String x = request.getResourceUrl();
+		 * String x_[] = x.split("?");
+		 */
+		
+		Integer index = request.getResourceUrl().indexOf("?");
+		
+		
+		if (!matches(request.getResourceUrl().substring(0, index-1))) {
 			throw new NotMatchedException();
 		}
+		
+		UrlParameters params= UrlParameters.newInstance(request.getResourceUrl().substring(index+1));
+		
+		/**
+		 * TODO do something with params
+		 */
+		
 		// String url = request.getResourceUrl();
 
 		/**
@@ -144,6 +160,7 @@ public class Resource {
 		return response;
 	}
 
+	
 	/**
 	 * TODO enhance the matching algorithms
 	 * @param url
