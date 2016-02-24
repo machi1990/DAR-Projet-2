@@ -1,2 +1,2 @@
 # DAR-Projet-2
-Web framework from scratch
+A Java Web framework from scratch
