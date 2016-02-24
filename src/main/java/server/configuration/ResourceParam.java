@@ -8,18 +8,18 @@ import com.google.common.primitives.Primitives;
 
 import server.annotation.PARAM;
 
-public class ResourceParams {
+public class ResourceParam {
 	private Parameter parameter;
 	private Integer rank;
 	private Object value;
 	
-	public ResourceParams(Parameter parameter, Integer rank) throws NotSupportedException {
+	public ResourceParam(Parameter parameter, Integer rank) throws NotSupportedException {
 		super();
 		setParameter(parameter);
 		this.rank = rank;
 	}
 
-	public ResourceParams() {
+	public ResourceParam() {
 		super();
 	}
 
@@ -97,7 +97,7 @@ public class ResourceParams {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ResourceParams other = (ResourceParams) obj;
+		ResourceParam other = (ResourceParam) obj;
 		if (parameter == null) {
 			if (other.parameter != null)
 				return false;
