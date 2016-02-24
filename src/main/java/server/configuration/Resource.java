@@ -110,13 +110,17 @@ public class Resource {
 		 */
 		
 		Integer index = request.getResourceUrl().indexOf("?");
+	
+		String requestUrl =  index != -1 ? request.getResourceUrl().substring(0, index-1) : request.getResourceUrl();
+		UrlParameters params = UrlParameters.newInstance("");
 		
-		
-		if (!matches(request.getResourceUrl().substring(0, index-1))) {
+		if (!matches(requestUrl)) {
 			throw new NotMatchedException();
 		}
-		
-		UrlParameters params= UrlParameters.newInstance(request.getResourceUrl().substring(index+1));
+				
+		if (index != -1) {
+			params = UrlParameters.newInstance(request.getResourceUrl().substring(index+1));
+		}
 		
 		/**
 		 * TODO do something with params
