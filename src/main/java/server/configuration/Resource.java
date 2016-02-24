@@ -27,7 +27,7 @@ import server.annotation.PUT;
 public class Resource {
 	private Method method;
 	private Class<?> clazz;
-	private Parameter[] paramters;
+	private Parameter[] parameters;
 	private String url;
 	private request.Method requestMethod;
 	
@@ -52,11 +52,11 @@ public class Resource {
 	}
 
 	public Parameter[] getParamters() {
-		return paramters;
+		return parameters;
 	}
 
 	public void setParamters(Parameter[] paramters) {
-		this.paramters = paramters;
+		this.parameters = paramters;
 	}
 
 	/**
@@ -68,6 +68,7 @@ public class Resource {
 			throw new IllegalAccessError("Method must be initialized");
 		}
 
+		
 		if (!method.isAccessible()) {
 			method.setAccessible(true);
 		}
@@ -119,18 +120,16 @@ public class Resource {
 		}
 		
 		/**
-		 * System.out.println(params); 
-		 * TODO do something with params
+		 * TODO do something with params in arguments method
 		 */
-		
-		// String url = request.getResourceUrl();
 
 		/**
 		 * TODO parse the demanded resourceUrl to get their corresponding match
-		 * to the method parameters
+		 * to the method parameters. 
+		 * See arguments
 		 */
 
-		Object result = method.invoke(clazz.newInstance(), request);
+		Object result = method.invoke(clazz.newInstance(),arguments(requestUrl,request,params));
 
 		if (result instanceof Response) {
 			return result;
@@ -180,6 +179,18 @@ public class Resource {
 		return produces != null && produces.value().equals(ContentType.JSON);
 	}
 	
+	/**
+	 * TODO
+	 * Return a list of arguments values in order
+	 * @param request
+	 * @return
+	 */
+	private Object[] arguments(String url,Request request,UrlParameters params) {
+		Object[] arguments = new Object[this.parameters.length];
+		arguments[0] = request;
+		
+		return arguments;
+	}
 	
 	private static request.Method method (Method method) {
 		
@@ -223,7 +234,7 @@ public class Resource {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((method == null) ? 0 : method.hashCode());
-		result = prime * result + Arrays.hashCode(paramters);
+		result = prime * result + Arrays.hashCode(parameters);
 		result = prime * result + ((requestMethod == null) ? 0 : requestMethod.hashCode());
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		return result;
@@ -244,7 +255,7 @@ public class Resource {
 				return false;
 		} else if (!method.equals(resource.method))
 			return false;
-		if (!Arrays.equals(paramters, resource.paramters))
+		if (!Arrays.equals(parameters, resource.parameters))
 			return false;
 		if (requestMethod != resource.requestMethod)
 			return false;
