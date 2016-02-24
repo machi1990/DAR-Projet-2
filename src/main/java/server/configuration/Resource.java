@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import request.ContentType;
@@ -14,6 +15,7 @@ import response.Response;
 import response.Status;
 import server.annotation.DELETE;
 import server.annotation.GET;
+import server.annotation.PARAM;
 import server.annotation.PATCH;
 import server.annotation.PATH;
 import server.annotation.POST;
@@ -168,7 +170,64 @@ public class Resource {
 	 * @return
 	 */
 	private boolean matches(String url) {
-		return this.url.equals(url);
+		String[] path = url.split("/");
+		String[] pathTemplate = this.url.split("/");
+		ArrayList<Parameter> params = new ArrayList<Parameter>();
+		// Check if annoted param
+		for(int i=0; i< paramters.length; i++){
+			if (paramters[i].getAnnotation(PARAM.class) != null){
+				params.add(paramters[i]);
+			}
+		}
+		
+		// /echo/6456/p -> path example
+		// /echo/<id>/p -> pathTemplate example
+		
+		//Match application name
+		if(pathTemplate[0].equals(path[0])){
+			for(int i=1; i< pathTemplate.length; i++){
+				// Test if parameter
+				if(pathTemplate[i].startsWith("<")){
+					for(Parameter p : params){
+						if(p.getName().equals(pathTemplate[i])){
+							// if return true, Set value path[i] to parameter
+							if(p.getType().equals(Long.class) && isInteger(path[i])){
+								Long.valueOf(path[i]);
+							} else if(p.getType().equals(Integer.class) && isInteger(path[i])){
+								Integer.valueOf(path[i]);
+							} else if(p.getType().equals(Double.class) && isInteger(path[i])){
+								Double.valueOf(path[i]);
+							} else if(p.getType().equals(String.class)){ // impossible avec notre modèle
+								//path[i];
+							} else {
+								return false;
+							}
+						}
+					}
+				} else if(!pathTemplate[i].equals(path[i])){
+					return false;
+				}
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public static boolean isInteger(String s) {
+	    return isInteger(s,10);
+	}
+
+	private static boolean isInteger(String s, int radix) {
+	    if(s.isEmpty()) return false;
+	    for(int i = 0; i < s.length(); i++) {
+	        if(i == 0 && s.charAt(i) == '-') {
+	            if(s.length() == 1) return false;
+	            else continue;
+	        }
+	        if(Character.digit(s.charAt(i),radix) < 0) return false;
+	    }
+	    return true;
 	}
 	
 	private boolean matches(request.Method requestMethod) {
