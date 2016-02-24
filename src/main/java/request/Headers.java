@@ -18,9 +18,7 @@ public class Headers {
 	public void put(String header,String value) {
 		if (header.equals("Content-Type")) {
 			setContentType(value);
-		} else if (header.equals("Accept") && contentType() == null) {
-			this.headers.put(header, value);
-		}else {
+		} else {
 			this.headers.put(header, value);
 		}
 	}
