@@ -173,9 +173,9 @@ public class Resource {
 		String[] pathTemplate = this.url.split("/");
 		ArrayList<Parameter> params = new ArrayList<Parameter>();
 		// Check if annoted param
-		for(int i=0; i< paramters.length; i++){
-			if (paramters[i].getAnnotation(PARAM.class) != null){
-				params.add(paramters[i]);
+		for(int i=0; i< parameters.length; i++){
+			if (parameters[i].getAnnotation(PARAM.class) != null){
+				params.add(parameters[i]);
 			}
 		}
 		
@@ -196,7 +196,7 @@ public class Resource {
 								Integer.valueOf(path[i]);
 							} else if(p.getType().equals(Double.class) && isInteger(path[i])){
 								Double.valueOf(path[i]);
-							} else if(p.getType().equals(String.class)){ // impossible avec notre modèle
+							} else if(p.getType().equals(String.class)){ // impossible avec notre modï¿½le
 								//path[i];
 							} else {
 								return false;
