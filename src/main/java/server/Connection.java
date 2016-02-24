@@ -59,9 +59,9 @@ public class Connection implements Runnable {
 					response.build(result);
 				}	
 			} catch (BadInputException e) {
-				response = Response.response(Status.NOT_FOUND);
+				response = Response.response(Status.INTERNAL_SERVER_ERROR);
 				response.setContentType(ContentType.PLAIN);
-				response.build("Null request");
+				response.build("Unexpected end of/ empty input.");
 			}
 
 			writer.write(response.toString());
