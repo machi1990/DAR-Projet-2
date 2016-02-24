@@ -81,9 +81,14 @@ public class Response {
 	}
 
 	public void build(Object object) {
+		if (object == null) {
+			return;
+		}
+		
 		if (this.body == null) {
 			this.body = new StringBuilder();
 		} 
+		
 		
 		this.body.append(object.toString());
 	}
@@ -103,7 +108,8 @@ public class Response {
 	public String toString() {
 		long now = new Date().getTime();
 		
-		String header =  status +"Date: " + new Date(now)+ "\r\n" +
+		String header =  status +"Date: " + new Date(now)+ "\r\n" 
+		+ "Connection: close" +  "\r\n"+
 		"Server: " + HttpServer.ServerName + 
 		stringifyCookie() + this.headers;
 		

@@ -29,7 +29,8 @@ public class Resource {
 	private Class<?> clazz;
 	private Parameter[] paramters;
 	private String url;
-
+	private request.Method requestMethod;
+	
 	public Resource(Class<?> clazz, Method method) {
 		super();
 		setClazz(clazz);
@@ -46,6 +47,7 @@ public class Resource {
 
 	public void setMethod(Method method) {
 		this.method = method;
+		this.requestMethod = method(method);
 		this.retrieveMetaInfos();
 	}
 
@@ -103,18 +105,12 @@ public class Resource {
 	 */
 	public Object invoke(Request request)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException, NotMatchedException {
-
-		/*
-		 * String x = request.getResourceUrl();
-		 * String x_[] = x.split("?");
-		 */
-		
 		Integer index = request.getResourceUrl().indexOf("?");
 	
-		String requestUrl =  index != -1 ? request.getResourceUrl().substring(0, index-1) : request.getResourceUrl();
-		UrlParameters params = UrlParameters.newInstance("");
+		String requestUrl =  index != -1 ? request.getResourceUrl().substring(0, index) : request.getResourceUrl();
+		UrlParameters params = UrlParameters.newInstance();
 		
-		if (!matches(requestUrl)) {
+		if (!matches(request.getMethod()) || !matches(requestUrl)) {
 			throw new NotMatchedException();
 		}
 				
@@ -123,6 +119,7 @@ public class Resource {
 		}
 		
 		/**
+		 * System.out.println(params); 
 		 * TODO do something with params
 		 */
 		
@@ -174,9 +171,46 @@ public class Resource {
 		return this.url.equals(url);
 	}
 	
+	private boolean matches(request.Method requestMethod) {
+		return this.requestMethod.equals(requestMethod);
+	}
+	
 	private boolean producesJSON () {
 		PRODUCES produces = method.getAnnotation(PRODUCES.class);
 		return produces != null && produces.value().equals(ContentType.JSON);
+	}
+	
+	
+	private static request.Method method (Method method) {
+		
+		Annotation[] annotations = method.getAnnotations();
+		Class<?> annotationClass;
+		
+		for (Annotation annotation:annotations) {
+			annotationClass = annotation.annotationType();
+			
+			if (annotationClass == GET.class) {
+				return request.Method.GET;
+			}
+			
+			if (annotationClass == PUT.class) {
+				return request.Method.PUT;
+			}
+			
+			if (annotationClass == POST.class) {
+				return request.Method.POST;
+			}
+			if (annotationClass == DELETE.class) {
+				return request.Method.DELETE;
+			}
+			
+			if (annotationClass == PATCH.class) {
+				return request.Method.PATCH;
+			}
+		}
+		
+		return null;
+		
 	}
 	
 	@Override
@@ -184,15 +218,13 @@ public class Resource {
 		return "Resource [method=" + method + "]";
 	}
 
-	/**
-	 * TODO review this
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((method == null) ? 0 : method.hashCode());
 		result = prime * result + Arrays.hashCode(paramters);
+		result = prime * result + ((requestMethod == null) ? 0 : requestMethod.hashCode());
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		return result;
 	}
@@ -205,18 +237,21 @@ public class Resource {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Resource other = (Resource) obj;
+		Resource resource = (Resource) obj;
+		
 		if (method == null) {
-			if (other.method != null)
+			if (resource.method != null)
 				return false;
-		} else if (!method.equals(other.method))
+		} else if (!method.equals(resource.method))
 			return false;
-		if (!Arrays.equals(paramters, other.paramters))
+		if (!Arrays.equals(paramters, resource.paramters))
+			return false;
+		if (requestMethod != resource.requestMethod)
 			return false;
 		if (url == null) {
-			if (other.url != null)
+			if (resource.url != null)
 				return false;
-		} else if (!url.equals(other.url))
+		} else if (!url.equals(resource.url))
 			return false;
 		return true;
 	}

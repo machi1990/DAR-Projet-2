@@ -7,7 +7,7 @@ import java.util.Map;
 public class UrlParameters {
 	private Map<String,String> values = new HashMap<>();
 	
-	public UrlParameters() {
+	private UrlParameters() {
 		super();
 	}
 	
@@ -55,16 +55,24 @@ public class UrlParameters {
 
 	public static UrlParameters newInstance(String paramaters) {
 		String params[] = paramaters.trim().split("&");
-		UrlParameters urlParams = new UrlParameters();
+		UrlParameters urlParams = newInstance();
 		
 		Integer index = 0;
 		
 		for (String param:params) {
 			index  = param.indexOf("=");
-			urlParams.put(param.substring(0,index-1), param.substring(index+1));
+			if (index == -1) {
+				continue;
+			}
+			
+			urlParams.put(param.substring(0,index), param.substring(index+1));
 		}
 		
 		
 		return urlParams;
+	}
+
+	public static UrlParameters newInstance() {
+		return new UrlParameters();
 	}
 }

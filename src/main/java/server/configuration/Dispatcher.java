@@ -19,17 +19,25 @@ public class Dispatcher {
 	public Object dispatch(Request request) {		
 		Object result = null;
 		
+		boolean matched = false;
+		
 		for (Resource resource: resources) {
 			try {
 				result = resource.invoke(request);
+				matched = true;
 				break;
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException e) {
 				Response response = Response.response(Status.INTERNAL_SERVER_ERROR);
 				response.build(e.getMessage());
 				return response;
 			} catch (NotMatchedException e) {
-				
+				// Catch and continue
 			}
+		}
+		
+		if (!matched) {
+			Response response = Response.response(Status.NOT_IMPLEMENTED);
+			return response;
 		}
 		
 		return result;
