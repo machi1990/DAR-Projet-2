@@ -53,9 +53,8 @@ public class UrlParameters {
 		return true;
 	}
 
-	public static UrlParameters newInstance(String paramaters) {
+	public static UrlParameters putParamsTo(UrlParameters urlParams,String paramaters) {
 		String params[] = paramaters.trim().split("&");
-		UrlParameters urlParams = newInstance();
 		
 		Integer index = 0;
 		

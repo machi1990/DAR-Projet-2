@@ -22,22 +22,17 @@ import server.annotation.POST;
 import server.annotation.PRODUCES;
 import server.annotation.PUT;
 
-/**
- * TODO Create a Param class, from which we'll have a param object whose from
- * data supplied by the PARAM annotation.
- *
- */
+
 public class Resource {
+	private String url;
 	private Method method;
 	private Class<?> clazz;
-	private Parameter[] paramters;
-
-	private ArrayList<Parameter> annotatedParameters = new ArrayList<>();
-	private ArrayList<Parameter> nonAnnotatedParameter = new ArrayList<>(); 
-	
-	private String url;
+	private Parameter[] parameters;
 	private request.Method requestMethod;
 
+	private ArrayList<Parameter> annotatedParameters = new ArrayList<>();
+	private ArrayList<Parameter> nonAnnotatedParameter = new ArrayList<>();
+	
 	public Resource(Class<?> clazz, Method method) {
 		super();
 		setClazz(clazz);
@@ -59,11 +54,11 @@ public class Resource {
 	}
 
 	public Parameter[] getParamters() {
-		return paramters;
+		return parameters;
 	}
 
 	public void setParamters(Parameter[] paramters) {
-		this.paramters = paramters;
+		this.parameters = paramters;
 	}
 
 	/**
@@ -89,13 +84,13 @@ public class Resource {
 			setUrl(getUrl() + path.value());
 		}
 		
-		retrieveParameter(method);
+		retrieveParameters(method);
 	}
 
-	private void retrieveParameter (Method method) {
+	private void retrieveParameters (Method method) {
 		this.setParamters(method.getParameters());
 		
-		for (Parameter parameter: paramters ) {
+		for (Parameter parameter: parameters ) {
 			if (parameter.getAnnotation(PARAM.class) != null) { // is annotated
 				annotatedParameters.add(parameter);
 			} else {
@@ -127,28 +122,17 @@ public class Resource {
 		Integer index = request.getResourceUrl().indexOf("?");
 
 		String requestUrl = index != -1 ? request.getResourceUrl().substring(0, index) : request.getResourceUrl();
-		UrlParameters params = UrlParameters.newInstance();
+		UrlParameters urlParams = UrlParameters.newInstance();
 
 		if (!matches(request.getMethod()) || !matches(requestUrl)) {
 			throw new NotMatchedException();
 		}
 
 		if (index != -1) {
-			params = UrlParameters.newInstance(request.getResourceUrl().substring(index + 1));
+			UrlParameters.putParamsTo(urlParams,request.getResourceUrl().substring(index + 1));
 		}
-
-		/**
-		 * System.out.println(params); TODO do something with params
-		 */
-
-		// String url = request.getResourceUrl();
-
-		/**
-		 * TODO parse the demanded resourceUrl to get their corresponding match
-		 * to the method parameters
-		 */
-
-		Object result = method.invoke(clazz.newInstance(), request);
+		
+		Object result = method.invoke(clazz.newInstance(),arguments(requestUrl,request,urlParams));
 
 		if (result instanceof Response) {
 			return result;
@@ -174,6 +158,7 @@ public class Resource {
 		return response;
 	}
 
+	
 	/**
 	 * TODO enhance the matching algorithms
 	 * 
@@ -183,6 +168,7 @@ public class Resource {
 	private boolean matches(String url) {
 		String[] path = url.split("/");
 		String[] pathTemplate = this.url.split("/");
+		
 		
 		// /echo/6456/p -> path example
 		// /echo/<id>/p -> pathTemplate example
@@ -250,6 +236,22 @@ public class Resource {
 		return produces != null && produces.value().equals(ContentType.JSON);
 	}
 
+	/**
+	 * TODO
+	 * Return a list of arguments values in order
+	 * e.g by parsing the demanded resourceUrl at the same time querying the parameters list
+	 * to get the route-param to Parameter match before invoking the method. 
+	 * See arguments
+	 * @param request
+	 * @return
+	 */
+	private Object[] arguments(String url,Request request,UrlParameters params) {
+		Object[] arguments = new Object[this.parameters.length];
+		arguments[0] = request;
+
+		return arguments;
+	}
+
 	private static request.Method method(Method method) {
 
 		Annotation[] annotations = method.getAnnotations();
@@ -292,7 +294,7 @@ public class Resource {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((method == null) ? 0 : method.hashCode());
-		result = prime * result + Arrays.hashCode(paramters);
+		result = prime * result + Arrays.hashCode(parameters);
 		result = prime * result + ((requestMethod == null) ? 0 : requestMethod.hashCode());
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		return result;
@@ -313,7 +315,7 @@ public class Resource {
 				return false;
 		} else if (!method.equals(resource.method))
 			return false;
-		if (!Arrays.equals(paramters, resource.paramters))
+		if (!Arrays.equals(parameters, resource.parameters))
 			return false;
 		if (requestMethod != resource.requestMethod)
 			return false;
@@ -341,8 +343,10 @@ public class Resource {
 		Annotation[] annotations = method.getAnnotations();
 
 		for (Annotation annotation : annotations) {
-			if (annotation.annotationType().equals(PATH.class) || annotation.annotationType().equals(POST.class)
-					|| annotation.annotationType().equals(PUT.class) || annotation.annotationType().equals(GET.class)
+			if (annotation.annotationType().equals(PATH.class) 
+					|| annotation.annotationType().equals(POST.class)
+					|| annotation.annotationType().equals(PUT.class) 
+					|| annotation.annotationType().equals(GET.class)
 					|| annotation.annotationType().equals(DELETE.class)
 					|| annotation.annotationType().equals(PATCH.class)) {
 				return true;
