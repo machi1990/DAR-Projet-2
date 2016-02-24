@@ -25,6 +25,8 @@ public class PointApplication {
 	@PRODUCES(ContentType.JSON)
 	@PATH("/list")
 	public Set<Long> list() {
+		// just for test get
+		points.put((long) 0, new Point(4,2));
 		return points.keySet();
 	}
 	
@@ -32,6 +34,8 @@ public class PointApplication {
 	@PRODUCES(ContentType.JSON)
 	@PATH("/<id>/x")
 	public Double getX(@PARAM("<id>") Long id) {
+		// just for test get
+		points.put((long) 0, new Point(4,2));
 		return points.get(id).getX();
 	}
 	
@@ -46,6 +50,8 @@ public class PointApplication {
 	@PRODUCES(ContentType.JSON)
 	@PATH("/p/<id>")
 	public Point getPoint(@PARAM("<id>") Long id) {
+		// just for test get
+		points.put((long) 0, new Point(4,2));
 		return points.get(id);
 	}
 	

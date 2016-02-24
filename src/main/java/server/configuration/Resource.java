@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import request.ContentType;
 import request.Request;
@@ -32,6 +33,7 @@ public class Resource {
 	private Parameter[] paramters;
 	private String url;
 	private request.Method requestMethod;
+	private HashMap<String,Object> requestParameters = new HashMap<String,Object>();
 	
 	public Resource(Class<?> clazz, Method method) {
 		super();
@@ -132,8 +134,13 @@ public class Resource {
 		 * to the method parameters
 		 */
 
-		Object result = method.invoke(clazz.newInstance(), request);
-
+		Object result;
+		if(requestParameters.isEmpty()){
+			result = method.invoke(clazz.newInstance(), request);
+		} else {
+			result = invokeMethodWithParameters();
+		}
+		
 		if (result instanceof Response) {
 			return result;
 		}
@@ -173,6 +180,10 @@ public class Resource {
 		String[] path = url.split("/");
 		String[] pathTemplate = this.url.split("/");
 		ArrayList<Parameter> params = new ArrayList<Parameter>();
+		
+		if(path.length != pathTemplate.length){
+			return false;
+		}
 		// Check if annoted param
 		for(int i=0; i< paramters.length; i++){
 			if (paramters[i].getAnnotation(PARAM.class) != null){
@@ -182,7 +193,8 @@ public class Resource {
 		
 		// /echo/6456/p -> path example
 		// /echo/<id>/p -> pathTemplate example
-		
+		System.out.println("Template = " + this.url);
+		System.out.println("Path = " + url);
 		//Match application name
 		if(pathTemplate[0].equals(path[0])){
 			for(int i=1; i< pathTemplate.length; i++){
@@ -192,11 +204,11 @@ public class Resource {
 						if(p.getName().equals(pathTemplate[i])){
 							// if return true, Set value path[i] to parameter
 							if(p.getType().equals(Long.class) && isInteger(path[i])){
-								Long.valueOf(path[i]);
+								requestParameters.put(pathTemplate[i],Long.valueOf(path[i]));
 							} else if(p.getType().equals(Integer.class) && isInteger(path[i])){
-								Integer.valueOf(path[i]);
+								requestParameters.put(pathTemplate[i],Integer.valueOf(path[i]));
 							} else if(p.getType().equals(Double.class) && isInteger(path[i])){
-								Double.valueOf(path[i]);
+								requestParameters.put(pathTemplate[i],Double.valueOf(path[i]));
 							} else if(p.getType().equals(String.class)){ // impossible avec notre modèle
 								//path[i];
 							} else {
@@ -228,6 +240,23 @@ public class Resource {
 	        if(Character.digit(s.charAt(i),radix) < 0) return false;
 	    }
 	    return true;
+	}
+	
+	private Object invokeMethodWithParameters() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException {
+		ArrayList<Object> paramsInOrder = new ArrayList<Object>();
+		ArrayList<String> paramsName = new ArrayList<String>();
+		for(int i=0; i<paramters.length; i++){
+			if (paramters[i].getAnnotation(PARAM.class) != null){
+				paramsName.add(paramters[i].getName());
+			}
+		}
+		
+		for(String n : paramsName){
+			if(requestParameters.containsKey(n)){
+				paramsInOrder.add(requestParameters.get(n));
+			}
+		}
+		return method.invoke(clazz.newInstance(), paramsInOrder);
 	}
 	
 	private boolean matches(request.Method requestMethod) {
