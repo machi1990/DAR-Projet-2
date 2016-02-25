@@ -138,6 +138,7 @@ public class Resource {
 		if(requestParameters.isEmpty()){
 			result = method.invoke(clazz.newInstance(), request);
 		} else {
+			System.out.println("invoke.invokeMethodWithParameters");
 			result = invokeMethodWithParameters();
 		}
 		
@@ -200,15 +201,25 @@ public class Resource {
 			for(int i=1; i< pathTemplate.length; i++){
 				// Test if parameter
 				if(pathTemplate[i].startsWith("<")){
+					System.out.println(".startsWith(<)");
+					boolean paramFound = false;
 					for(Parameter p : params){
-						if(p.getName().equals(pathTemplate[i])){
+						System.out.println("p.annotation(PARAM)="+p.getAnnotationsByType(PARAM.class)[0].value()+" / pathTemplate="+pathTemplate[i]);
+						if(p.getAnnotationsByType(PARAM.class)[0].value().equals(pathTemplate[i])){
+							System.out.println("ok");
 							// if return true, Set value path[i] to parameter
 							if(p.getType().equals(Long.class) && isInteger(path[i])){
 								requestParameters.put(pathTemplate[i],Long.valueOf(path[i]));
+								paramFound = true;
+								break;
 							} else if(p.getType().equals(Integer.class) && isInteger(path[i])){
 								requestParameters.put(pathTemplate[i],Integer.valueOf(path[i]));
+								paramFound = true;
+								break;
 							} else if(p.getType().equals(Double.class) && isInteger(path[i])){
 								requestParameters.put(pathTemplate[i],Double.valueOf(path[i]));
+								paramFound = true;
+								break;
 							} else if(p.getType().equals(String.class)){ // impossible avec notre modèle
 								//path[i];
 							} else {
@@ -216,10 +227,14 @@ public class Resource {
 							}
 						}
 					}
+					if(!paramFound){
+						return false;
+					}
 				} else if(!pathTemplate[i].equals(path[i])){
 					return false;
 				}
 			}
+			System.out.println("return true, requestParam : "+requestParameters.size());
 			return true;
 		} else {
 			return false;
@@ -247,7 +262,7 @@ public class Resource {
 		ArrayList<String> paramsName = new ArrayList<String>();
 		for(int i=0; i<paramters.length; i++){
 			if (paramters[i].getAnnotation(PARAM.class) != null){
-				paramsName.add(paramters[i].getName());
+				paramsName.add(paramters[i].getAnnotationsByType(PARAM.class)[0].value());
 			}
 		}
 		
@@ -256,7 +271,26 @@ public class Resource {
 				paramsInOrder.add(requestParameters.get(n));
 			}
 		}
-		return method.invoke(clazz.newInstance(), paramsInOrder);
+		if(paramsInOrder.size() == 0){
+			throw new IllegalArgumentException();
+		}
+		System.out.println("paramsInOrder ="+paramsInOrder.get(0));
+		
+		switch(paramsInOrder.size()){
+		case 1 :
+			return method.invoke(clazz.newInstance(), paramsInOrder.get(0));
+		case 2 :
+			return method.invoke(clazz.newInstance(), paramsInOrder.get(0), paramsInOrder.get(1));
+		case 3 :
+			return method.invoke(clazz.newInstance(), paramsInOrder.get(0), paramsInOrder.get(1), paramsInOrder.get(2));
+		case 4 :
+			return method.invoke(clazz.newInstance(), paramsInOrder.get(0), paramsInOrder.get(1), paramsInOrder.get(2), paramsInOrder.get(3));
+		case 5 :
+			return method.invoke(clazz.newInstance(), paramsInOrder.get(0), paramsInOrder.get(1), paramsInOrder.get(2), paramsInOrder.get(3), paramsInOrder.get(4));
+		default :
+			throw new IllegalArgumentException();
+		}
+		// return method.invoke(clazz.newInstance(), paramsInOrder); Doesn't work
 	}
 	
 	private boolean matches(request.Method requestMethod) {
