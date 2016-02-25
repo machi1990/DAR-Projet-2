@@ -19,7 +19,7 @@ public class ResourceParam {
 	public ResourceParam(Parameter parameter, Integer rank) throws NotSupportedException {
 		super();
 		setParameter(parameter);
-
+		setRankInMethod(rank);
 	}
 
 	public ResourceParam() {
@@ -51,11 +51,12 @@ public class ResourceParam {
 	}
 
 	public void setParameter(Parameter parameter) throws NotSupportedException {
-		if (!hasSupportedType(parameter)) {
+		this.parameter = parameter;
+		
+		if (hasAnnotation() && !hasSupportedType(parameter)) {
 			throw new NotSupportedException();
 		}
 		
-		this.parameter = parameter;
 	}
 
 
@@ -78,8 +79,12 @@ public class ResourceParam {
 		return null;
 	}
 	
+	public Class<?> getType() {
+		return Primitives.wrap(parameter.getType());
+	}
+	
 	public boolean isDigitType() {
-		Class<?> clazz = Primitives.wrap(parameter.getType());
+		Class<?> clazz = getType();
 		return clazz == Long.class || clazz == Integer.class || clazz == Short.class || clazz == Byte.class;
 	}
 	
@@ -179,7 +184,4 @@ public class ResourceParam {
 		}
 		
 	}
-	
-	
-	
 }

@@ -16,7 +16,17 @@ import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
 import com.upmc.stl.dar.server.annotation.PATH;
+import com.upmc.stl.dar.server.resource.configuration.ResourceParam.NotSupportedException;
 
+/**
+ *  TODO
+ *  <ol>	
+ *    <li> &nbsp Throws an exception in case of routing conflicts. </li>
+ *   <ol>
+ *  <br>
+ * @author Machi
+ *
+ */
 public class ResourceConfig {
 	private static final List<ClassLoader> classLoadersList;
 	private Set<Class<?>> classes = new HashSet<>();
@@ -90,7 +100,7 @@ public class ResourceConfig {
 		this.classes = classes;
 	}
 
-	public Set<Resource> getResources() {
+	public Set<Resource> getResources() throws NotSupportedException, ParamConflictException {
 		Set<Resource> resources = new HashSet<>();
 		
 		for (Class<?> clazz:classes) {

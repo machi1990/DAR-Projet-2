@@ -1,5 +1,6 @@
 package com.upmc.stl.dar.server.resource.configuration;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,7 +27,7 @@ public class Dispatcher {
 				result = resource.invoke(request);
 				matched = true;
 				break;
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException e) {
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException | IOException e) {
 				Response response = Response.response(Status.INTERNAL_SERVER_ERROR);
 				response.build(e.getMessage());
 				return response;

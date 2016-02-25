@@ -1,15 +1,21 @@
 package com.upmc.stl.dar.server.resource.configuration;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.upmc.stl.dar.server.annotation.CONSUMES;
 import com.upmc.stl.dar.server.annotation.DELETE;
 import com.upmc.stl.dar.server.annotation.GET;
-import com.upmc.stl.dar.server.annotation.PARAM;
 import com.upmc.stl.dar.server.annotation.PATCH;
 import com.upmc.stl.dar.server.annotation.PATH;
 import com.upmc.stl.dar.server.annotation.POST;
@@ -18,11 +24,23 @@ import com.upmc.stl.dar.server.annotation.PUT;
 import com.upmc.stl.dar.server.request.ContentType;
 import com.upmc.stl.dar.server.request.Request;
 import com.upmc.stl.dar.server.request.UrlParameters;
+import com.upmc.stl.dar.server.resource.configuration.ResourceParam.NotSupportedException;
 import com.upmc.stl.dar.server.response.Jsonfier;
 import com.upmc.stl.dar.server.response.Response;
 import com.upmc.stl.dar.server.response.Status;
 
-
+/**
+ * TODO 
+ * <ol>
+ * 		<li> &nbsp Full implementation of arguments </li>
+ *      <li> &nbsp Generate a regular expression pattern which will be used in the matches mathod. </li>
+ *      <li> &nbsp equals and hashCode re-implementation using the generated pattern. </li>
+ *      <li> &nbsp Full review and correction </li>
+ * </ol> 
+ * <br>
+ * @author Machi
+ *
+ */
 public class Resource {
 	private String url;
 	private Method method;
@@ -31,9 +49,13 @@ public class Resource {
 	private com.upmc.stl.dar.server.request.Method requestMethod;
 
 	private ArrayList<Parameter> annotatedParameters = new ArrayList<>();
-	private ArrayList<Parameter> nonAnnotatedParameter = new ArrayList<>();
 	
-	public Resource(Class<?> clazz, Method method) {
+	private Map<String,ResourceParam> mapper = new HashMap<>();
+	private Map<Integer,ResourceParam> nonAnnotatedMapper = new HashMap<>();
+	
+	private Pattern pattern;
+	
+	public Resource(Class<?> clazz, Method method) throws NotSupportedException, ParamConflictException {
 		super();
 		setClazz(clazz);
 		this.setMethod(method);
@@ -41,7 +63,6 @@ public class Resource {
 
 	public Resource() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public void setClazz(Class<?> clazz) {
@@ -52,7 +73,7 @@ public class Resource {
 		return method;
 	}
 
-	public void setMethod(Method method) {
+	public void setMethod(Method method) throws NotSupportedException, ParamConflictException {
 		this.method = method;
 		this.requestMethod = method(method);
 		this.retrieveMetaInfos();
@@ -69,8 +90,10 @@ public class Resource {
 	/**
 	 * TODO retrieve all meta-data information e.g The method Annotation such as
 	 * GET POST etc To make sure a correct request method is invoked.
+	 * @throws NotSupportedException 
+	 * @throws ParamConflictException 
 	 */
-	private void retrieveMetaInfos() {
+	private void retrieveMetaInfos() throws NotSupportedException, ParamConflictException {
 		if (method == null) {
 			throw new IllegalAccessError("Method must be initialized");
 		}
@@ -92,14 +115,25 @@ public class Resource {
 		retrieveParameters(method);
 	}
 
-	private void retrieveParameters (Method method) {
+	private void retrieveParameters (Method method) throws NotSupportedException, ParamConflictException {
 		this.setParamters(method.getParameters());
 		
-		for (Parameter parameter: parameters ) {
-			if (parameter.getAnnotation(PARAM.class) != null) { // is annotated
+		Parameter parameter;
+		for (Integer index = 0; index < parameters.length; ++index ) {
+			parameter = parameters[index];
+			ResourceParam param = new ResourceParam(parameter, index);
+			
+			if (param.hasAnnotation()) { // is annotated
 				annotatedParameters.add(parameter);
+				
+				if (mapper.containsKey(param.getAnnotationValue())) {
+					throw new ParamConflictException();
+				}
+				
+				mapper.put(param.getAnnotationValue(), param);
+				
 			} else {
-				nonAnnotatedParameter.add(parameter);
+				nonAnnotatedMapper.put(index, param);
 			}
 		}
 	}
@@ -109,10 +143,6 @@ public class Resource {
 	}
 
 	/**
-	 * TODO make sure the method is invoked with the right kind of arguments
-	 * After the request is parsed, call this method with the generated request
-	 * object and response object.
-	 * 
 	 * @param instance
 	 * @param args
 	 * @return
@@ -121,9 +151,10 @@ public class Resource {
 	 * @throws InvocationTargetException
 	 * @throws InstantiationException
 	 * @throws NotMatchedException
+	 * @throws IOException 
 	 */
 	public Object invoke(Request request) throws IllegalAccessException, IllegalArgumentException,
-			InvocationTargetException, InstantiationException, NotMatchedException {
+			InvocationTargetException, InstantiationException, NotMatchedException, IOException {
 		Integer index = request.getResourceUrl().indexOf("?");
 
 		String requestUrl = index != -1 ? request.getResourceUrl().substring(0, index) : request.getResourceUrl();
@@ -241,6 +272,11 @@ public class Resource {
 		return produces != null && produces.value().equals(ContentType.JSON);
 	}
 
+	private boolean consumesJSON () {
+		CONSUMES consumes = method.getAnnotation(CONSUMES.class);
+		return consumes != null && consumes.value().equals(CONSUMES.Consumed.JSON);
+	}
+	
 	/**
 	 * TODO
 	 * Return a list of arguments values in order
@@ -249,10 +285,29 @@ public class Resource {
 	 * See arguments
 	 * @param request
 	 * @return
+	 * @throws IOException 
+	 * @throws JsonMappingException 
+	 * @throws JsonParseException 
 	 */
-	private Object[] arguments(String url,Request request,UrlParameters params) {
+	private Object[] arguments(String url,Request request,UrlParameters params) throws JsonParseException, JsonMappingException, IOException {
 		Object[] arguments = new Object[this.parameters.length];
-		arguments[0] = request;
+		
+		for (Integer index: nonAnnotatedMapper.keySet()) {
+			Class<?> type = nonAnnotatedMapper.get(index).getType();
+			if (type == Request.class) {
+				arguments[index] = request;
+			} else if (type == UrlParameters.class) {
+				arguments[index] = params;
+			} else { // Body
+				if (consumesJSON()) {
+					arguments[index] = Jsonfier.toJavaObject(request.getBody(), type); // JSON
+				} else {
+					arguments[index] = request.getBody(); // STRING
+				}
+			}
+		}
+		
+		//TODO parse annotated params
 
 		return arguments;
 	}
@@ -359,6 +414,14 @@ public class Resource {
 		}
 
 		return false;
+	}
+
+	public Pattern getPattern() {
+		return pattern;
+	}
+
+	public void setPattern(Pattern pattern) {
+		this.pattern = pattern;
 	}
 
 }
