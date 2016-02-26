@@ -16,41 +16,41 @@ public class ResourceParam {
 	
 	private Object value;
 	
-	public ResourceParam(Parameter parameter, Integer rank) throws NotSupportedException {
+	protected ResourceParam(Parameter parameter, Integer rank) throws NotSupportedException {
 		super();
 		setParameter(parameter);
 		setRankInMethod(rank);
 	}
 
-	public ResourceParam() {
+	protected ResourceParam() {
 		super();
 	}
 	
-	public String getAnnotationValue() {
+	protected String getAnnotationValue() {
 		return hasAnnotation() ? parameter.getAnnotation(PARAM.class).value():null;
 	}
 
-	public boolean hasAnnotation() {
+	protected boolean hasAnnotation() {
 		return parameter.getAnnotation(PARAM.class) != null;
 	}
 
-	public Object getValue() {
+	protected Object getValue() {
 		return value;
 	}
 
-	public void setValue(String value) throws IllegalAccessException, IllegalArgumentException {
+	protected void setValue(String value) throws IllegalAccessException, IllegalArgumentException {
 		this.value = valueOf(value);
 	}
 	
-	public Integer getRankInMethod() {
+	protected Integer getRankInMethod() {
 		return rankInMethod;
 	}
 
-	public void setRankInMethod(Integer rankInMethod) {
+	protected void setRankInMethod(Integer rankInMethod) {
 		this.rankInMethod = rankInMethod;
 	}
 
-	public void setParameter(Parameter parameter) throws NotSupportedException {
+	protected void setParameter(Parameter parameter) throws NotSupportedException {
 		this.parameter = parameter;
 		
 		if (hasAnnotation() && !hasSupportedType(parameter)) {
@@ -60,7 +60,7 @@ public class ResourceParam {
 	}
 
 
-	Object valueOf(String value) throws IllegalAccessException, IllegalArgumentException {
+	protected Object valueOf(String value) throws IllegalAccessException, IllegalArgumentException {
 		
 		Class<?> clazz = Primitives.wrap(parameter.getType());
 		
@@ -79,20 +79,20 @@ public class ResourceParam {
 		return null;
 	}
 	
-	public Class<?> getType() {
+	protected Class<?> getType() {
 		return Primitives.wrap(parameter.getType());
 	}
 	
-	public boolean isDigitType() {
+	private boolean isDigitType() {
 		Class<?> clazz = getType();
 		return clazz == Long.class || clazz == Integer.class || clazz == Short.class || clazz == Byte.class;
 	}
 	
-	public boolean isNumericType() {
+	private boolean isNumericType() {
 		return Number.class.isAssignableFrom(Primitives.wrap(parameter.getType()));
 	}
 	
-	public Pair<String,String> toPattern() {
+	protected Pair<String,String> toPattern() {
 		if (!hasAnnotation()) {
 			return null;
 		}
@@ -163,16 +163,16 @@ public class ResourceParam {
 		return (clazz.isPrimitive() && clazz != void.class && clazz != char.class) || clazz == String.class || clazz.isEnum();
 	}
 	
-	public Integer getRankInUrl() {
+	protected Integer getRankInUrl() {
 		return rankInUrl;
 	}
 
-	public void setRankInUrl(Integer rankInUrl) {
+	protected void setRankInUrl(Integer rankInUrl) {
 		this.rankInUrl = rankInUrl;
 	}
 
 	
-	public String getName() {
+	protected String getName() {
 		return parameter.getName();
 	}
 
@@ -180,7 +180,7 @@ public class ResourceParam {
 	public static class NotSupportedException extends Exception {
 		private static final long serialVersionUID = 7015933353596207604L;
 
-		public NotSupportedException() {
+		protected NotSupportedException() {
 			super();
 		}
 

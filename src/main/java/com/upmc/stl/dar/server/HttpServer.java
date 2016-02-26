@@ -5,7 +5,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Set;
 
-import com.upmc.stl.dar.server.resource.configuration.Dispatcher;
 import com.upmc.stl.dar.server.resource.configuration.ParamConflictException;
 import com.upmc.stl.dar.server.resource.configuration.Resource;
 import com.upmc.stl.dar.server.resource.configuration.ResourceConfig;
@@ -15,7 +14,7 @@ import com.upmc.stl.dar.server.resource.configuration.ResourcesNotFoundException
 public class HttpServer {
 	public static final String ServerName = "HomeMade/0.0.1\r\n";
 	private Integer port;
-	private boolean started = false;
+	private Boolean started = false;
 	private Dispatcher dispatcher = Dispatcher.dispatcher();
 	
 	private HttpServer() {
@@ -28,14 +27,13 @@ public class HttpServer {
 		if (port > 10000 && port < 60000) {
 			this.port = port;
 		}
-
 	}
 	
 	public void setResources(Set<Resource> resources) {
 		dispatcher.setResources(resources);
 	}
 
-	public void start() throws IOException {
+	public final void start() throws IOException {
 		if (started) {
 			System.err.println("Server already started");
 			return;
@@ -51,7 +49,7 @@ public class HttpServer {
 			try {
 				socket = server.accept();
 				System.err.println("New client connected");
-				new Thread( new Connection(socket)).start();
+				dispatcher.dispatch(new Connection(socket));
 			} catch (IOException e1) {
 				e1.printStackTrace();
 				this.started = false;

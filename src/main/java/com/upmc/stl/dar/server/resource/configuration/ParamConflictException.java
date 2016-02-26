@@ -25,7 +25,4 @@ public class ParamConflictException extends Exception {
 				first +" \" and \" " + second +"\" inside method + \" " + 
 				method.getName() + "\" of class \" " + clazz.getName() + " \"";
 	}
-	
-	
-
 }

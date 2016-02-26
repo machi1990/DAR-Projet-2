@@ -5,14 +5,19 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.upmc.stl.dar.server.exceptions.BadInputException;
 import com.upmc.stl.dar.server.request.ContentType;
 import com.upmc.stl.dar.server.request.Headers;
 import com.upmc.stl.dar.server.request.Request;
-import com.upmc.stl.dar.server.resource.configuration.Dispatcher;
+import com.upmc.stl.dar.server.resource.configuration.NotMatchedException;
+import com.upmc.stl.dar.server.resource.configuration.Resource;
 import com.upmc.stl.dar.server.response.Response;
 import com.upmc.stl.dar.server.response.Status;
 
@@ -21,12 +26,20 @@ import com.upmc.stl.dar.server.response.Status;
  */
 public class Connection implements Runnable {
 	private Socket socket;
-	private Dispatcher dispatcher = Dispatcher.dispatcher();
-
-	public Connection(Socket socket) {
+	private Set<Resource> resources = new HashSet<>();
+	
+	protected Connection(Socket socket) {
 		this.socket = socket;
 	}
 
+	protected Connection setResources(Set<Resource> resources) {
+		synchronized (resources) {
+			this.resources = Collections.unmodifiableSet(resources);
+		}
+		
+		return this;
+	}
+	
 	public void run() {
 		BufferedWriter writer = null;
 
@@ -41,15 +54,8 @@ public class Connection implements Runnable {
 
 			try {
 				afterInputRetrieved(stringRequest, request);
-				/*response = Response.response(Status.OK);
-				response.setContentType(request.getHeaders().contentType());
-				response.build(request); */
 				
-
-				/**
-				 * TODO Dispatch requests
-				 */
-				Object result = dispatcher.dispatch(request);
+				Object result = serve(request);
 				
 				if (result instanceof Response) {
 					response = (Response) result;
@@ -141,6 +147,32 @@ public class Connection implements Runnable {
 		default:
 			headers.put(key, value);
 		}
+	}
+
+	private Object serve(Request request) {		
+		Object result = null;
+		boolean matched = false;
+		
+		for (Resource resource: resources) {
+			try {
+				result = resource.invoke(request);
+				matched = true;
+				break;
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException | IOException e) {
+				Response response = Response.response(Status.INTERNAL_SERVER_ERROR);
+				response.build(e.getMessage());
+				return response;
+			} catch (NotMatchedException e) {
+				// Catch and continue
+			}
+		}
+		
+		if (!matched) {
+			Response response = Response.response(Status.NOT_IMPLEMENTED);
+			return response;
+		}
+		
+		return result;
 	}
 
 	@Override
