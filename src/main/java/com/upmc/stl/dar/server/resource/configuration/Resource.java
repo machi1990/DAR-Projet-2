@@ -50,8 +50,10 @@ public class Resource {
 
 	private ArrayList<Parameter> annotatedParameters = new ArrayList<>();
 	
-	private Map<String,ResourceParam> mapper = new HashMap<>();
+	private Map<Integer,ResourceParam> annotatedMapper = new HashMap<>();
 	private Map<Integer,ResourceParam> nonAnnotatedMapper = new HashMap<>();
+	
+	private ArrayList<String> accessors;
 	
 	private Pattern pattern;
 	
@@ -101,7 +103,11 @@ public class Resource {
 		if (!method.isAccessible()) {
 			method.setAccessible(true);
 		}
+		
+		retrieveParameters(method);
+	}
 
+	private void retrieveParameters (Method method) throws NotSupportedException, ParamConflictException {
 		PATH path = clazz.getAnnotation(PATH.class);
 
 		setUrl(path.value());
@@ -112,11 +118,9 @@ public class Resource {
 			setUrl(getUrl() + path.value());
 		}
 		
-		retrieveParameters(method);
-	}
-
-	private void retrieveParameters (Method method) throws NotSupportedException, ParamConflictException {
 		this.setParamters(method.getParameters());
+		
+		Map<String,ResourceParam> mapper = new HashMap<>();
 		
 		Parameter parameter;
 		for (Integer index = 0; index < parameters.length; ++index ) {
@@ -125,15 +129,35 @@ public class Resource {
 			
 			if (param.hasAnnotation()) { // is annotated
 				annotatedParameters.add(parameter);
+				String value = param.getAnnotationValue();
 				
-				if (mapper.containsKey(param.getAnnotationValue())) {
-					throw new ParamConflictException();
+				if (mapper.containsKey(value)) {
+					throw new ParamConflictException(value,mapper.get(value).getName(),parameter.getName(),method,clazz);
 				}
 				
-				mapper.put(param.getAnnotationValue(), param);
+				mapper.put(value, param);
 				
 			} else {
 				nonAnnotatedMapper.put(index, param);
+			}
+		}
+		
+		paramsParser(mapper);
+	}
+	
+	/**
+	 * A param parser from url to resource param parser
+	 * @param path
+	 */
+	private void paramsParser(Map<String,ResourceParam> mapper) {
+		accessors = new ArrayList<String>(Arrays.asList(url.split("/")));
+		
+		int counter = 0;
+		for (String accessor:accessors) {
+			if (mapper.containsKey(accessor)) {
+				mapper.get(accessor).setRankInUrl(counter);
+				annotatedMapper.put(counter, mapper.get(accessor));
+				counter++;
 			}
 		}
 	}
@@ -288,8 +312,10 @@ public class Resource {
 	 * @throws IOException 
 	 * @throws JsonMappingException 
 	 * @throws JsonParseException 
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException 
 	 */
-	private Object[] arguments(String url,Request request,UrlParameters params) throws JsonParseException, JsonMappingException, IOException {
+	private Object[] arguments(String url,Request request,UrlParameters params) throws JsonParseException, JsonMappingException, IOException, IllegalAccessException, IllegalArgumentException {
 		Object[] arguments = new Object[this.parameters.length];
 		
 		for (Integer index: nonAnnotatedMapper.keySet()) {
@@ -307,7 +333,24 @@ public class Resource {
 			}
 		}
 		
-		//TODO parse annotated params
+		// 
+
+		if (annotatedMapper.isEmpty()) {
+			return arguments;
+		}
+		
+		String accessors_[] = url.split("/");
+		
+		Integer counter = 0;
+		
+		for (String accessor_:accessors_) {
+			if (!accessors.contains(accessor_) && !accessor_.isEmpty()) {
+				ResourceParam param = annotatedMapper.get(counter);	
+				arguments[param.getRankInMethod()] = param.valueOf(accessor_);
+				counter++;
+			}
+		}
+	
 
 		return arguments;
 	}
@@ -423,5 +466,4 @@ public class Resource {
 	public void setPattern(Pattern pattern) {
 		this.pattern = pattern;
 	}
-
 }

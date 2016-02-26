@@ -31,8 +31,8 @@ public class PointApplication {
 	@GET
 	@PRODUCES(ContentType.JSON)
 	@PATH("/<id>/x")
-	public Double getX(@PARAM("<id>") Long id) {
-		return points.get(id).getX();
+	public Long getX(@PARAM("<id>") Long id) {
+		return id;
 	}
 	
 	@GET
@@ -52,7 +52,7 @@ public class PointApplication {
 	@POST
 	@PRODUCES(ContentType.JSON)
 	@CONSUMES(Consumed.JSON)
-	@PATH("/p/<id>")
+	@PATH("/post")
 	public Response postPoint(Point point) {
 		points.put((long) (points.size()+1), point);
 		

@@ -60,7 +60,7 @@ public class ResourceParam {
 	}
 
 
-	private Object valueOf(String value) throws IllegalAccessException, IllegalArgumentException {
+	Object valueOf(String value) throws IllegalAccessException, IllegalArgumentException {
 		
 		Class<?> clazz = Primitives.wrap(parameter.getType());
 		
@@ -170,6 +170,12 @@ public class ResourceParam {
 	public void setRankInUrl(Integer rankInUrl) {
 		this.rankInUrl = rankInUrl;
 	}
+
+	
+	public String getName() {
+		return parameter.getName();
+	}
+
 
 	public static class NotSupportedException extends Exception {
 		private static final long serialVersionUID = 7015933353596207604L;
