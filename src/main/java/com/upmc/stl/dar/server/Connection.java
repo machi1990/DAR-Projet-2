@@ -13,10 +13,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.upmc.stl.dar.server.exceptions.BadInputException;
+import com.upmc.stl.dar.server.exceptions.NotMatchedException;
 import com.upmc.stl.dar.server.request.ContentType;
 import com.upmc.stl.dar.server.request.Headers;
 import com.upmc.stl.dar.server.request.Request;
-import com.upmc.stl.dar.server.resource.configuration.NotMatchedException;
 import com.upmc.stl.dar.server.resource.configuration.Resource;
 import com.upmc.stl.dar.server.response.Response;
 import com.upmc.stl.dar.server.response.Status;

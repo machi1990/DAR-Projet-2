@@ -5,14 +5,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Set;
 
-import com.upmc.stl.dar.server.resource.configuration.ParamConflictException;
+import com.upmc.stl.dar.server.exceptions.NotSupportedException;
+import com.upmc.stl.dar.server.exceptions.ParamConflictException;
+import com.upmc.stl.dar.server.exceptions.ResourcesNotFoundException;
 import com.upmc.stl.dar.server.resource.configuration.Resource;
 import com.upmc.stl.dar.server.resource.configuration.ResourceConfig;
-import com.upmc.stl.dar.server.resource.configuration.ResourceParam.NotSupportedException;
-import com.upmc.stl.dar.server.resource.configuration.ResourcesNotFoundException;
 
 public class HttpServer {
-	public static final String ServerName = "HomeMade/0.0.1\r\n";
+	public static final String SERVER_NAME = "HomeMade/0.0.1\r\n";
 	private Integer port;
 	private Boolean started = false;
 	private Dispatcher dispatcher = Dispatcher.dispatcher();
@@ -58,7 +58,7 @@ public class HttpServer {
 		}
 	} 
 
-	public static void start(int port,ResourceConfig config) throws IOException, IllegalArgumentException, ResourcesNotFoundException, NotSupportedException, ParamConflictException{
+	public static void start(int port,ResourceConfig config) throws IOException, IllegalArgumentException, ResourcesNotFoundException, com.upmc.stl.dar.server.exceptions.NotSupportedException, ParamConflictException{
 		
 		if (config == null) {
 			throw new IllegalArgumentException("Can not start server with non registered resources");

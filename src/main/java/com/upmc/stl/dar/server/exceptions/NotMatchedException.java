@@ -1,4 +1,4 @@
-package com.upmc.stl.dar.server.resource.configuration;
+package com.upmc.stl.dar.server.exceptions;
 
 public class NotMatchedException extends Exception{
 	private static final long serialVersionUID = 7294454445986653792L;

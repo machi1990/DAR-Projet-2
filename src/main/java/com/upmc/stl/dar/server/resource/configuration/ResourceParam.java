@@ -8,6 +8,7 @@ import javafx.util.Pair;
 
 import com.google.common.primitives.Primitives;
 import com.upmc.stl.dar.server.annotation.PARAM;
+import com.upmc.stl.dar.server.exceptions.NotSupportedException;
 
 public class ResourceParam {
 	private Parameter parameter;
@@ -174,20 +175,5 @@ public class ResourceParam {
 	
 	protected String getName() {
 		return parameter.getName();
-	}
-
-
-	public static class NotSupportedException extends Exception {
-		private static final long serialVersionUID = 7015933353596207604L;
-
-		protected NotSupportedException() {
-			super();
-		}
-
-		@Override
-		public String getMessage() {
-			return "Parameter\'s type is not supported. Only numeric types,enums and strings are supported";
-		}
-		
 	}
 }

@@ -1,4 +1,4 @@
-package com.upmc.stl.dar.server.resource.configuration;
+package com.upmc.stl.dar.server.exceptions;
 
 public class ResourcesNotFoundException extends Exception {
 	private static final long serialVersionUID = -2553765111548824467L;

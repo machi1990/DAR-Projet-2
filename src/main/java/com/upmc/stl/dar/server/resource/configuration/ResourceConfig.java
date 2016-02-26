@@ -16,7 +16,9 @@ import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
 import com.upmc.stl.dar.server.annotation.PATH;
-import com.upmc.stl.dar.server.resource.configuration.ResourceParam.NotSupportedException;
+import com.upmc.stl.dar.server.exceptions.NotSupportedException;
+import com.upmc.stl.dar.server.exceptions.ParamConflictException;
+import com.upmc.stl.dar.server.exceptions.ResourcesNotFoundException;
 
 /**
  *  TODO

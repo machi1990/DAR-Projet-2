@@ -111,7 +111,7 @@ public class Response {
 		
 		String header =  status +"Date: " + new Date(now)+ "\r\n" 
 		+ "Connection: close" +  "\r\n"+
-		"Server: " + HttpServer.ServerName + 
+		"Server: " + HttpServer.SERVER_NAME + 
 		stringifyCookie() + this.headers;
 		
 		return header + "\r\n" +this.body; 
