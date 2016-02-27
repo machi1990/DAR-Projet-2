@@ -12,8 +12,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.upmc.stl.dar.server.exceptions.BadInputException;
-import com.upmc.stl.dar.server.exceptions.NotMatchedException;
+import com.upmc.stl.dar.server.exceptions.ExceptionCreator;
+import com.upmc.stl.dar.server.exceptions.ExceptionCreator.ExceptionKind;
+import com.upmc.stl.dar.server.exceptions.ServerException;
 import com.upmc.stl.dar.server.request.ContentType;
 import com.upmc.stl.dar.server.request.Headers;
 import com.upmc.stl.dar.server.request.Request;
@@ -64,7 +65,7 @@ public class Connection implements Runnable {
 					response.setContentType(request.getHeaders().contentType());
 					response.build(result);
 				}	
-			} catch (BadInputException e) {
+			} catch (ServerException e) {
 				response = Response.response(Status.INTERNAL_SERVER_ERROR);
 				response.setContentType(ContentType.PLAIN);
 				response.build(e.getMessage());
@@ -98,12 +99,12 @@ public class Connection implements Runnable {
 		return builder.toString();
 	}
 
-	private void afterInputRetrieved(String input, Request request) throws BadInputException {
+	private void afterInputRetrieved(String input, Request request) throws ServerException  {
 		String[] inputs = input.split("\r\n");
 		Headers headers = new Headers();
 
 		if (input.isEmpty()) {
-			throw new BadInputException();
+			throw ExceptionCreator.creator().create(ExceptionKind.BAD_INPUT);
 		}
 
 		String[] methodUrlContainer = inputs[0].split(" ");
@@ -162,8 +163,9 @@ public class Connection implements Runnable {
 				Response response = Response.response(Status.INTERNAL_SERVER_ERROR);
 				response.build(e.getMessage());
 				return response;
-			} catch (NotMatchedException e) {
+			} catch (ServerException notMatchedException) {
 				// Catch and continue
+				
 			}
 		}
 		

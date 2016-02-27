@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 public class BadFormedUrlException extends ParamNotAcceptableException {
 	private static final long serialVersionUID = -3965698135356518557L;
 
-	public BadFormedUrlException(String value, Method method, Class<?> clazz) {
+	protected BadFormedUrlException(String value, Method method, Class<?> clazz) {
 		super(value, method, clazz);
 	}
 

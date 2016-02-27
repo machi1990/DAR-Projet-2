@@ -7,7 +7,7 @@ public class ParamConflictException extends ParamNotAcceptableException {
 	private String first;
 	private String second;
 	
-	public ParamConflictException(String value, String first, String second, Method method, Class<?> clazz) {
+	protected ParamConflictException(String value, String first, String second, Method method, Class<?> clazz) {
 		super(value,method,clazz);
 		this.first = first;
 		this.second = second;

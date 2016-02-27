@@ -8,7 +8,7 @@ public class ParamNotAcceptableException extends ServerException {
 	protected Method method;
 	protected Class<?> clazz;
 	
-	public ParamNotAcceptableException(String value, Method method, Class<?> clazz) {
+	protected ParamNotAcceptableException(String value, Method method, Class<?> clazz) {
 		super();
 		this.value = value;
 		this.method = method;

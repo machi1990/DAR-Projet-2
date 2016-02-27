@@ -7,7 +7,7 @@ public class UrlConfictException extends ServerException {
 	private Resource first;
 	private Resource second;
 	
-	public UrlConfictException(Resource first, Resource second) {
+	protected UrlConfictException(Resource first, Resource second) {
 		super();
 		this.first = first;
 		this.second = second;

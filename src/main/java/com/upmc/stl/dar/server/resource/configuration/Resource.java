@@ -20,12 +20,13 @@ import com.upmc.stl.dar.server.annotation.POST;
 import com.upmc.stl.dar.server.annotation.PRODUCES;
 import com.upmc.stl.dar.server.annotation.PUT;
 import com.upmc.stl.dar.server.exceptions.BadFormedUrlException;
+import com.upmc.stl.dar.server.exceptions.ExceptionCreator;
+import com.upmc.stl.dar.server.exceptions.ExceptionCreator.ExceptionKind;
 import com.upmc.stl.dar.server.exceptions.ServerException;
-import com.upmc.stl.dar.server.exceptions.NotMatchedException;
 import com.upmc.stl.dar.server.exceptions.NotSupportedException;
 import com.upmc.stl.dar.server.exceptions.ParamConflictException;
 import com.upmc.stl.dar.server.exceptions.ParamNotAcceptableException;
-import com.upmc.stl.dar.server.exceptions.UrlParamConfictException;
+import com.upmc.stl.dar.server.exceptions.UrlParamConflictException;
 import com.upmc.stl.dar.server.request.ContentType;
 import com.upmc.stl.dar.server.request.Request;
 import com.upmc.stl.dar.server.request.UrlParameters;
@@ -101,7 +102,7 @@ public class Resource {
 		PATH path = clazz.getAnnotation(PATH.class);
 
 		if (!isAcceptableClassUrl(path.value())) {
-			throw new BadFormedUrlException(path.value(), null, clazz);
+			throw ExceptionCreator.creator().create(ExceptionKind.BAD_FORMED_URL,path.value(), null, clazz);
 		}
 		
 		setUrl(path.value()+getMethodUrl());
@@ -112,7 +113,7 @@ public class Resource {
 		paramsParser(preAnnotatedParamsMapper);
 	}
 	
-	private String getMethodUrl() throws BadFormedUrlException {
+	private String getMethodUrl() throws ServerException  {
 		PATH path = method.getAnnotation(PATH.class);
 
 		if (path == null) {
@@ -120,7 +121,7 @@ public class Resource {
 		}
 			
 		if (path.value().isEmpty() || !isAcceptableMethodUrl(path.value())) {
-			throw new BadFormedUrlException(path.value(), method, clazz);
+			throw ExceptionCreator.creator().create(ExceptionKind.BAD_FORMED_URL,path.value(), method, clazz);
 		}
 		
 		return path.value();
@@ -138,11 +139,11 @@ public class Resource {
 				String value = param.getAnnotationValue();
 				
 				if (!isAcceptableParamUrl(value)) {
-					throw new ParamNotAcceptableException(value, method, clazz);
+					throw ExceptionCreator.creator().create(ExceptionKind.PARAM_NOT_ACCEPTABLE,value,method,clazz);
 				}
 				
 				if (preAnnotatedParamsMapper.containsKey(value)) {
-					throw new ParamConflictException(value,preAnnotatedParamsMapper.get(value).getName(),parameter.getName(),method,clazz);
+					throw ExceptionCreator.creator().create(value, preAnnotatedParamsMapper.get(value).getName(), parameter.getName(), method, clazz);
 				}
 				
 				preAnnotatedParamsMapper.put(value, param);
@@ -187,7 +188,7 @@ public class Resource {
 	 * Also we'll create a pattern in this method.
 	 * 
 	 * @param mapper
-	 * @throws UrlParamConfictException 
+	 * @throws UrlParamConflictException 
 	 * @throws BadFormedUrlException 
 	 */
 	private void paramsParser(Map<String,ResourceParam> mapper) throws ServerException {
@@ -212,11 +213,11 @@ public class Resource {
 			}
 			
 			if (!mapper.containsKey(accessor)) {
-				throw new BadFormedUrlException(url, method, clazz);
+				throw ExceptionCreator.creator().create(ExceptionKind.BAD_FORMED_URL,url, method, clazz);
 			}
 		
 			if (treatedParams.containsKey(accessor)) {
-				throw new UrlParamConfictException(accessor,method,clazz);
+				throw ExceptionCreator.creator().create(ExceptionKind.URL_PARAM_CONFLICT,accessor, method, clazz);
 			}
 			
 			param = mapper.get(accessor);
@@ -236,7 +237,7 @@ public class Resource {
 		 */
 		
 		if (annotatedParamsMapper.size() != mapper.size()) {
-			throw new BadFormedUrlException(url, method, clazz);
+			throw ExceptionCreator.creator().create(ExceptionKind.BAD_FORMED_URL,url, method, clazz);
 		}
 	}
 	
@@ -252,17 +253,17 @@ public class Resource {
 	 * @throws IllegalArgumentException
 	 * @throws InvocationTargetException
 	 * @throws InstantiationException
-	 * @throws NotMatchedException
 	 * @throws IOException 
+	 * @throws ServerException 
 	 */
 	public Object invoke(Request request) throws IllegalAccessException, IllegalArgumentException,
-			InvocationTargetException, InstantiationException, NotMatchedException, IOException {
+			InvocationTargetException, InstantiationException, IOException, ServerException {
 		
 		String url = request.getUrl();
 		UrlParameters urlParams = UrlParameters.newInstance();
 
 		if (!matches(request.getMethod()) || !matches(url)) {
-			throw new NotMatchedException();
+			throw ExceptionCreator.creator().create(ExceptionKind.NOT_MATCHED);
 		}
 
 		UrlParameters.putParamsTo(urlParams,request.getUrlParams());

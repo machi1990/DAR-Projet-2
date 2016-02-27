@@ -19,8 +19,8 @@ import org.reflections.util.FilterBuilder;
 
 import com.upmc.stl.dar.server.annotation.PATH;
 import com.upmc.stl.dar.server.exceptions.ServerException;
-import com.upmc.stl.dar.server.exceptions.ResourceNotFoundException;
-import com.upmc.stl.dar.server.exceptions.UrlConfictException;
+import com.upmc.stl.dar.server.exceptions.ExceptionCreator;
+import com.upmc.stl.dar.server.exceptions.ExceptionCreator.ExceptionKind;
 
 /**
  *  TODO
@@ -77,7 +77,7 @@ public class ResourceConfig {
 		Set<Class<?>> classes = resourceReflections.getTypesAnnotatedWith(PATH.class);
 
 		if (classes.isEmpty()) {
-			throw new ResourceNotFoundException();
+			throw ExceptionCreator.creator().create(ExceptionKind.NOT_FOUND);
 		}
 		
 		this.classes.addAll(classes);
@@ -105,7 +105,7 @@ public class ResourceConfig {
 		}
 		
 		if (!found) {
-			throw new ResourceNotFoundException();
+			throw ExceptionCreator.creator().create(ExceptionKind.NOT_FOUND);
 		}
 	}
 
@@ -127,7 +127,7 @@ public class ResourceConfig {
 				resource = new Resource(clazz, method);
 				
 				if (resources.containsKey(resource)) {
-					throw new UrlConfictException(resource,resources.get(resource));
+					throw ExceptionCreator.creator().create(resource,resources.get(resource));
 				}
 				
 				resources.put(resource, resource);

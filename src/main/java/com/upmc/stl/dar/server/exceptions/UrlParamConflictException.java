@@ -2,10 +2,10 @@ package com.upmc.stl.dar.server.exceptions;
 
 import java.lang.reflect.Method;
 
-public class UrlParamConfictException extends ParamNotAcceptableException {
+public class UrlParamConflictException extends ParamNotAcceptableException {
 	private static final long serialVersionUID = 8379981265154333734L;
 
-	public UrlParamConfictException(String value, Method method, Class<?> clazz) {
+	protected UrlParamConflictException(String value, Method method, Class<?> clazz) {
 		super(value, method, clazz);
 	}
 

@@ -6,7 +6,9 @@ import java.lang.reflect.Parameter;
 
 import com.google.common.primitives.Primitives;
 import com.upmc.stl.dar.server.annotation.PARAM;
-import com.upmc.stl.dar.server.exceptions.NotSupportedException;
+import com.upmc.stl.dar.server.exceptions.ExceptionCreator;
+import com.upmc.stl.dar.server.exceptions.ExceptionCreator.ExceptionKind;
+import com.upmc.stl.dar.server.exceptions.ServerException;
 
 public class ResourceParam {
 	private Parameter parameter;
@@ -15,7 +17,7 @@ public class ResourceParam {
 	
 	private Object value;
 	
-	protected ResourceParam(Parameter parameter, Integer rank) throws NotSupportedException {
+	protected ResourceParam(Parameter parameter, Integer rank) throws ServerException {
 		super();
 		setParameter(parameter);
 		setRankInMethod(rank);
@@ -49,11 +51,11 @@ public class ResourceParam {
 		this.rankInMethod = rankInMethod;
 	}
 
-	protected void setParameter(Parameter parameter) throws NotSupportedException {
+	protected void setParameter(Parameter parameter) throws ServerException {
 		this.parameter = parameter;
 		
 		if (hasAnnotation() && !hasSupportedType(parameter)) {
-			throw new NotSupportedException();
+			throw ExceptionCreator.creator().create(ExceptionKind.NOT_SUPPORTED);
 		}
 		
 	}
