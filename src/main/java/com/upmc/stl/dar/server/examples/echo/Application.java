@@ -56,7 +56,7 @@ public class Application {
 				+ "</tr></thead>"
 				+ "<tbody><tr>"
 				+ "<td>"+request.getMethod()+"</td>"
-				+ "<td>"+request.getResourceUrl()+"</td>"
+				+ "<td>"+request.getUrl()+"</td>"
 				+ "<td>"+request.getHeaders()+"</td>"
 				+ "<td>"+request.stringfyCookies().replaceAll("\r\n", "<br>")+"</td>"
 				+ (request.hasBody() ?"<td>"+request.getBody()+"</td>":"")

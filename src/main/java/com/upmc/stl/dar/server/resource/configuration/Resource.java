@@ -7,7 +7,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -258,20 +257,17 @@ public class Resource {
 	 */
 	public Object invoke(Request request) throws IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, InstantiationException, NotMatchedException, IOException {
-		Integer index = request.getResourceUrl().indexOf("?");
-
-		String requestUrl = index != -1 ? request.getResourceUrl().substring(0, index) : request.getResourceUrl();
+		
+		String url = request.getUrl();
 		UrlParameters urlParams = UrlParameters.newInstance();
 
-		if (!matches(request.getMethod()) || !matches(requestUrl)) {
+		if (!matches(request.getMethod()) || !matches(url)) {
 			throw new NotMatchedException();
 		}
 
-		if (index != -1) {
-			UrlParameters.putParamsTo(urlParams,request.getResourceUrl().substring(index + 1));
-		}
+		UrlParameters.putParamsTo(urlParams,request.getUrlParams());
 		
-		Object result = method.invoke(clazz.newInstance(),arguments(requestUrl,request,urlParams));
+		Object result = method.invoke(clazz.newInstance(),arguments(url,request,urlParams));
 
 		if (result instanceof Response) {
 			return result;
@@ -298,8 +294,7 @@ public class Resource {
 	}
 
 	private boolean matches(String url) {
-		Matcher matcher = pattern.matcher(url);
-		return matcher.matches();
+		return pattern.matcher(url).matches();
 	}
 
 	private boolean matches(com.upmc.stl.dar.server.request.Method requestMethod) {

@@ -4,9 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Request {
-	private String resourceUrl;
+	private String url;
 	private String body;
 	private Method method;
+	
 	private Headers headers;
 	private Map<String, Cookie> cookies = new HashMap<>();
 	
@@ -65,19 +66,30 @@ public class Request {
 		this.headers = headers;
 	}
 	
-
-	public String getResourceUrl() {
-		return resourceUrl;
+	public String getUrlParams() {
+		Integer index = url.indexOf("?");
+		String urlParams = index != -1? url.substring(index + 1): "";
+		return urlParams;
 	}
 
-	public void setResourceUrl(String resourceUrl) {
-		this.resourceUrl = resourceUrl;
+	public String getUrl() {
+		Integer index = url.indexOf("?");
+		String url = index != -1 ? this.url.substring(0, index) : this.url;
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+	
+	public boolean matchesStaticResource() {
+		return getUrl().indexOf('.') != -1;
 	}
 	
 	@Override
 	public String toString() {
 		return  "Method: "+ this.method.name() + " "+
-				"Url: "+ this.resourceUrl +
+				"Url: "+ this.url +
 				(hasBody() ? "Body: " + this.body:" ") + 
 				"Cookies: "+this.stringfyCookies()+
 				"Headers: " + this.headers.toString();
@@ -91,19 +103,19 @@ public class Request {
 		result = prime * result + ((cookies == null) ? 0 : cookies.hashCode());
 		result = prime * result + ((headers == null) ? 0 : headers.hashCode());
 		result = prime * result + ((method == null) ? 0 : method.hashCode());
-		result = prime * result + ((resourceUrl == null) ? 0 : resourceUrl.hashCode());
+		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
+	public boolean equals(Object object) {
+		if (this == object)
 			return true;
-		if (obj == null)
+		if (object == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (getClass() != object.getClass())
 			return false;
-		Request request = (Request) obj;
+		Request request = (Request) object;
 		if (body == null) {
 			if (request.body != null)
 				return false;
@@ -121,10 +133,10 @@ public class Request {
 			return false;
 		if (method != request.method)
 			return false;
-		if (resourceUrl == null) {
-			if (request.resourceUrl != null)
+		if (url == null) {
+			if (request.url != null)
 				return false;
-		} else if (!resourceUrl.equals(request.resourceUrl))
+		} else if (!url.equals(request.url))
 			return false;
 		return true;
 	}

@@ -108,7 +108,7 @@ public class Connection implements Runnable {
 
 		String[] methodUrlContainer = inputs[0].split(" ");
 		request.setMethod(methodUrlContainer[0]);
-		request.setResourceUrl(methodUrlContainer[1]);
+		request.setUrl(methodUrlContainer[1]);
 
 		for (int i = 1; i < inputs.length - 1; ++i) {
 			parse(inputs[i], request, headers);
