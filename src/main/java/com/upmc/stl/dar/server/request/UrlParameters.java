@@ -54,7 +54,7 @@ public class UrlParameters {
 	}
 
 	public static UrlParameters putParamsTo(UrlParameters urlParams,String paramaters) {
-		String params[] = paramaters.trim().split("&");
+		String params[] = paramaters.trim().split("&+");
 		
 		Integer index = 0;
 		
