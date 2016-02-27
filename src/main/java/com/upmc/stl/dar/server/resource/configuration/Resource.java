@@ -5,8 +5,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -51,7 +49,7 @@ public class Resource {
 	private Method method;
 	private Class<?> clazz;
 	
-	private ArrayList<String> accessors = new ArrayList<>();
+	private String[] accessors = new String[0];
 	private com.upmc.stl.dar.server.request.Method requestMethod;
 
 	private Map<Integer,ResourceParam> annotatedParamsMapper = new HashMap<>();
@@ -198,7 +196,7 @@ public class Resource {
 			pattern = Pattern.compile(url);
 		}
 		
-		accessors = new ArrayList<String>(Arrays.asList(url.split("/")));
+		accessors = url.split("/");
 		Map<String,Boolean> treatedParams = new HashMap<>();
 		StringBuilder pattern = new StringBuilder("");
 		
@@ -206,8 +204,8 @@ public class Resource {
 		ResourceParam param;
 		String accessor;
 		
-		for (Integer index = 1; index < accessors.size() ; ++index) {
-			accessor = accessors.get(index);
+		for (Integer index = 1; index < accessors.length ; ++index) {
+			accessor = accessors[index];
 			
 			if (accessor.matches("\\w*")) {
 				pattern.append("/"+accessor); 
@@ -354,16 +352,21 @@ public class Resource {
 			return arguments;
 		}
 		
-		String accessors_[] = url.split("/");
-		
+		String urlValues[] = url.split("/");
+		String accessor,value;
 		Integer counter = 0;
 		
-		for (String accessor_:accessors_) {
-			if (!accessors.contains(accessor_) && !accessor_.isEmpty()) {
-				ResourceParam param = annotatedParamsMapper.get(counter);	
-				arguments[param.getRankInMethod()] = param.valueOf(accessor_);
-				counter++;
+		for (Integer index = 0; index < accessors.length ; ++index) {
+			accessor = accessors[index];
+			value = urlValues[index];
+			
+			if (accessor.equals(value)) { // is not a url param.
+				continue;
 			}
+		
+			ResourceParam param = annotatedParamsMapper.get(counter);	
+			arguments[param.getRankInMethod()] = param.valueOf(value);
+			counter++;
 		}
 	
 
