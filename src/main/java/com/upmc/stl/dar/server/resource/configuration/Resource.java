@@ -157,7 +157,7 @@ public class Resource {
 	}
 	
 	/** 
-	 * Check whether a class has a well defined path method
+	 * Check whether a class has a well defined path url value
 	 * @param url
 	 * @return
 	 */
@@ -166,7 +166,7 @@ public class Resource {
 	}
 	
 	/** 
-	 * Check whether a method has a well defined path method
+	 * Check whether a method has a well defined path url value
 	 * @param url
 	 * @return
 	 */
@@ -175,7 +175,7 @@ public class Resource {
 	}
 	
 	/** 
-	 * Check whether a param has a well defined path method
+	 * Check whether a param has a well defined path url value
 	 * @param url
 	 * @return
 	 */
@@ -187,7 +187,7 @@ public class Resource {
 	 * A parser of params to create a map of params in order of their 
 	 * declaration in the url. <br>
 	 * 
-	 * Also we'll create a pattern in this method also.
+	 * Also we'll create a pattern in this method.
 	 * 
 	 * @param mapper
 	 * @throws UrlParamConfictException 
@@ -203,15 +203,13 @@ public class Resource {
 		StringBuilder pattern = new StringBuilder("");
 		
 		Integer counter = 0;
-		Boolean isWord = false;
 		ResourceParam param;
 		String accessor;
 		
 		for (Integer index = 1; index < accessors.size() ; ++index) {
 			accessor = accessors.get(index);
 			
-			isWord = accessor.matches("\\w*");	
-			if (isWord) {
+			if (accessor.matches("\\w*")) {
 				pattern.append("/"+accessor); 
 				continue;
 			}
@@ -236,8 +234,8 @@ public class Resource {
 		this.pattern = Pattern.compile(pattern.toString());
 		
 		/**
-		 * Last check to verify if a correct mapping has been done
-		 * If the two map are different in size then no correct mapping was done
+		 * Last check to verify if a correct mapping has been done.
+		 * If the two maps are different in size then no correct mapping was done
 		 */
 		
 		if (annotatedParamsMapper.size() != mapper.size()) {
@@ -321,10 +319,9 @@ public class Resource {
 	}
 	
 	/**
-	 * Return a list of arguments values in order
-	 * e.g by parsing the demanded resourceUrl at the same time querying the parameters list
-	 * to get the route-param to Parameter match before invoking the method. 
-	 * See arguments
+	 * Return a list of arguments values in order. 
+	 * By parsing the demanded resourceUrl at the same time querying the parameters list
+	 * to get the route-param-to-parameter match before invoking the method. 
 	 * @param request
 	 * @return
 	 * @throws IOException 

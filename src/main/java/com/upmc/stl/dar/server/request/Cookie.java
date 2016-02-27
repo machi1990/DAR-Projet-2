@@ -191,7 +191,7 @@ public class Cookie {
 	}
 	
 	/**
-	 * Parse cookies object from it's string cookie's string representation.
+	 * Parse cookies object from it's string cookie's representation.
 	 * The result is a map of cookie's key to it's value.
 	 * @param cookie
 	 * @return
