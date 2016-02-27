@@ -57,7 +57,7 @@ public class Resource {
 	protected Resource(Class<?> clazz, Method method) throws ServerException {
 		super();
 		setClazz(clazz);
-		this.setMethod(method);
+		setMethod(method);
 	}
 
 	protected Resource() {
@@ -79,7 +79,7 @@ public class Resource {
 	}
 
 	/**
-	 * TODO retrieve all meta-data information e.g The method Annotation such as
+	 * Retrieves all meta-data information e.g The method Annotation such as
 	 * GET POST etc To make sure a correct request method is invoked.
 	 * @throws NotSupportedException 
 	 * @throws ParamConflictException 
@@ -280,8 +280,7 @@ public class Resource {
 		}
 
 		/**
-		 * 
-		 * TODO later make a filter to do this work.
+		 * TODO  let a filter to do this work.
 		 */
 
 		if (producesJSON()) {
@@ -290,6 +289,7 @@ public class Resource {
 		} else {
 			response.build(result);
 		}
+		
 		return response;
 	}
 
@@ -341,8 +341,6 @@ public class Resource {
 			}
 		}
 		
-		// 
-
 		if (annotatedParamsMapper.isEmpty()) {
 			return arguments;
 		}

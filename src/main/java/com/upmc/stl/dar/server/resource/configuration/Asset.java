@@ -3,12 +3,10 @@ package com.upmc.stl.dar.server.resource.configuration;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Asset {
 	private static Asset welcomeFile = null;
-	private String content;
 	private String absPath;
 	private String type;
 	
@@ -31,9 +29,11 @@ public class Asset {
 	}
 	
 	private void readFile() throws IOException {
-		Path path = Paths.get(absPath);
-		type = Files.probeContentType(path);
-		content = new String(Files.readAllBytes(path),Charset.defaultCharset());
+		type = Files.probeContentType(Paths.get(absPath));
+	}
+	
+	public String sendFile() throws IOException {
+		return new String(Files.readAllBytes(Paths.get(absPath)),Charset.defaultCharset());
 	}
 	
 	public void makeWelcomeFile() {
@@ -42,8 +42,8 @@ public class Asset {
 	
 	public Asset clone() {
 		Asset clone = new Asset();
+		
 		clone.type = type;
-		clone.content = content;
 		clone.absPath = absPath;
 		
 		return clone;
@@ -55,7 +55,7 @@ public class Asset {
 	
 	@Override
 	public String toString() {
-		return content + "\r\n";
+		return "Asset [absPath=" + absPath + ", type=" + type + "]";
 	}
 
 	@Override
