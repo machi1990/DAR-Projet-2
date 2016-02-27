@@ -3,6 +3,7 @@ package com.upmc.stl.dar.server.examples.point;
 import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import com.upmc.stl.dar.server.annotation.CONSUMES;
@@ -21,6 +22,19 @@ public class PointApplication {
 
 	private static Map<Long,Point> points = new HashMap<>();
 	
+	static {
+		initializePointsDB();
+	}
+	
+	private static void initializePointsDB() {
+		Point point;
+		Random random = new Random();
+		for (Integer index = 0; index < 10; ++index) {
+			point = new Point(random.nextInt(1000), random.nextInt(1000));
+			points.put(Long.parseLong(index.toString()), point);
+		}
+	}
+	
 	@GET
 	@PRODUCES(ContentType.JSON)
 	@PATH("/list")
@@ -31,14 +45,14 @@ public class PointApplication {
 	@GET
 	@PRODUCES(ContentType.JSON)
 	@PATH("/<id>/x")
-	public Long getX(@PARAM("<id>") Long id) {
-		return id;
+	public Double getX(@PARAM("<id>") Long id) {
+		return points.get(id).getX();
 	}
 	
 	@GET
 	@PRODUCES(ContentType.JSON)
 	@PATH("/<id>/y")
-	public Double json(@PARAM("<id>") Long id ) {
+	public Double json(@PARAM("<id>") Long id) {
 		return points.get(id).getY();
 	}
 	
@@ -63,4 +77,12 @@ public class PointApplication {
 		return response; 
 	}
 	
+	@POST
+	@PRODUCES(ContentType.JSON)
+	@CONSUMES(Consumed.JSON)
+	@PATH("/post/<first>/<second>")
+	public Point test(@PARAM("<second>") Double second,@PARAM("<first>") Double first) {
+		points.put((long) (points.size()+1), new Point((int) Math.floor(first), (int) Math.floor(second)));
+		return new Point((int) Math.floor(first), (int) Math.floor(second)); 
+	}
 }

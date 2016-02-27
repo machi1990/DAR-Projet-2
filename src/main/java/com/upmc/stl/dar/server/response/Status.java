@@ -18,10 +18,13 @@ public enum Status {
 	UNAUTHORIZED;
 	
 	
-	private static final Map<Status, Map<String, String>> map;
+	private static final Map<Status, Map<String, String>> map = new ConcurrentHashMap<>();
 	
 	static {
-		map = new ConcurrentHashMap<>();
+		initStatusesMap();
+	}
+	
+	private static void initStatusesMap() {
 		Map<String, String> mapped= new HashMap<>();
 		mapped.put("status_code","200");
 		mapped.put("text", "OK");

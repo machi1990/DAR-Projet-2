@@ -67,7 +67,7 @@ public class Connection implements Runnable {
 			} catch (BadInputException e) {
 				response = Response.response(Status.INTERNAL_SERVER_ERROR);
 				response.setContentType(ContentType.PLAIN);
-				response.build("Unexpected end of/ empty input.");
+				response.build(e.getMessage());
 			}
 
 			writer.write(response.toString());

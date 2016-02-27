@@ -5,9 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Set;
 
-import com.upmc.stl.dar.server.exceptions.NotSupportedException;
-import com.upmc.stl.dar.server.exceptions.ParamConflictException;
-import com.upmc.stl.dar.server.exceptions.ResourcesNotFoundException;
+import com.upmc.stl.dar.server.exceptions.ServerException;
 import com.upmc.stl.dar.server.resource.configuration.Resource;
 import com.upmc.stl.dar.server.resource.configuration.ResourceConfig;
 
@@ -58,32 +56,23 @@ public class HttpServer {
 		}
 	} 
 
-	public static void start(int port,ResourceConfig config) throws IOException, IllegalArgumentException, ResourcesNotFoundException, com.upmc.stl.dar.server.exceptions.NotSupportedException, ParamConflictException{
-		
+	public static void start(int port,ResourceConfig config) throws IOException, IllegalArgumentException, ServerException {
 		if (config == null) {
 			throw new IllegalArgumentException("Can not start server with non registered resources");
 		}
 		
-		/**
-		 * ResourceConfig config = new ResourceConfig();
-		 * 
-		 * config.packages("application");
-		 *
-		 *	config.classes(Application.class);
-		 */
-				
 		HttpServer server = new HttpServer(port);
 		server.setResources(config.getResources());
 		server.start();
 	}
 	
-	public static void main(String[] args) throws IOException, IllegalArgumentException, ResourcesNotFoundException, NotSupportedException, ParamConflictException{
+	public static void main(String[] args) throws IOException, IllegalArgumentException, ServerException {
 		/**
 		 * TODO get port argument from args
 		 */
 		
 		/**
-		 * Echo application registration. The application class resides inside the application package
+		 * Registration of all samples applications using their package name.
 		 */
 		ResourceConfig config = new ResourceConfig();
 		config.packages("com.upmc.stl.dar.server.examples");

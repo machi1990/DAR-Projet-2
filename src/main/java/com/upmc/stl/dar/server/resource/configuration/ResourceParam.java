@@ -4,8 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
-import javafx.util.Pair;
-
 import com.google.common.primitives.Primitives;
 import com.upmc.stl.dar.server.annotation.PARAM;
 import com.upmc.stl.dar.server.exceptions.NotSupportedException;
@@ -93,7 +91,7 @@ public class ResourceParam {
 		return Number.class.isAssignableFrom(Primitives.wrap(parameter.getType()));
 	}
 	
-	protected Pair<String,String> toPattern() {
+	protected String getPattern() {
 		if (!hasAnnotation()) {
 			return null;
 		}
@@ -103,10 +101,10 @@ public class ResourceParam {
 		if (isDigitType()) {
 			pattern = "\\d{1,20}";
 		} else if (isNumericType()) {
-			pattern = "^\\d+(\\.\\d{1,20})?$";
+			pattern = "\\d+(\\.\\d{1,20})?";
 		}
 		
-		return new Pair<String, String>(getAnnotationValue(), pattern);
+		return pattern;
 	}
 	
 	@Override
@@ -172,7 +170,6 @@ public class ResourceParam {
 		this.rankInUrl = rankInUrl;
 	}
 
-	
 	protected String getName() {
 		return parameter.getName();
 	}

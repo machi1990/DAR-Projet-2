@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -21,9 +22,13 @@ import com.upmc.stl.dar.server.annotation.PATH;
 import com.upmc.stl.dar.server.annotation.POST;
 import com.upmc.stl.dar.server.annotation.PRODUCES;
 import com.upmc.stl.dar.server.annotation.PUT;
+import com.upmc.stl.dar.server.exceptions.BadFormedUrlException;
+import com.upmc.stl.dar.server.exceptions.ServerException;
 import com.upmc.stl.dar.server.exceptions.NotMatchedException;
 import com.upmc.stl.dar.server.exceptions.NotSupportedException;
 import com.upmc.stl.dar.server.exceptions.ParamConflictException;
+import com.upmc.stl.dar.server.exceptions.ParamNotAcceptableException;
+import com.upmc.stl.dar.server.exceptions.UrlParamConfictException;
 import com.upmc.stl.dar.server.request.ContentType;
 import com.upmc.stl.dar.server.request.Request;
 import com.upmc.stl.dar.server.request.UrlParameters;
@@ -34,10 +39,7 @@ import com.upmc.stl.dar.server.response.Status;
 /**
  * TODO 
  * <ol>
- * 		<li> &nbsp Full implementation of arguments </li>
- *      <li> &nbsp Generate a regular expression pattern which will be used in the matches mathod. </li>
- *      <li> &nbsp equals and hashCode re-implementation using the generated pattern. </li>
- *      <li> &nbsp Full review and correction </li>
+ * 		<li> &nbsp Full review and correction </li>
  * </ol> 
  * <br>
  * @author Machi
@@ -45,50 +47,38 @@ import com.upmc.stl.dar.server.response.Status;
  */
 public class Resource {
 	private String url;
+	private Pattern pattern;
 	private Method method;
 	private Class<?> clazz;
-	private Parameter[] parameters;
+	
+	private ArrayList<String> accessors = new ArrayList<>();
 	private com.upmc.stl.dar.server.request.Method requestMethod;
 
-	private ArrayList<Parameter> annotatedParameters = new ArrayList<>();
+	private Map<Integer,ResourceParam> annotatedParamsMapper = new HashMap<>();
+	private Map<Integer,ResourceParam> nonAnnotatedParamsMapper = new HashMap<>();
 	
-	private Map<Integer,ResourceParam> annotatedMapper = new HashMap<>();
-	private Map<Integer,ResourceParam> nonAnnotatedMapper = new HashMap<>();
-	
-	private ArrayList<String> accessors;
-	
-	private Pattern pattern;
-	
-	public Resource(Class<?> clazz, Method method) throws NotSupportedException, ParamConflictException {
+	protected Resource(Class<?> clazz, Method method) throws ServerException {
 		super();
 		setClazz(clazz);
 		this.setMethod(method);
 	}
 
-	public Resource() {
+	protected Resource() {
 		super();
 	}
 
-	public void setClazz(Class<?> clazz) {
+	private void setClazz(Class<?> clazz) {
 		this.clazz = clazz;
 	}
 
-	public Method getMethod() {
-		return method;
-	}
-
-	public void setMethod(Method method) throws NotSupportedException, ParamConflictException {
+	private void setMethod(Method method) throws ServerException {
 		this.method = method;
 		this.requestMethod = method(method);
 		this.retrieveMetaInfos();
 	}
 
-	public Parameter[] getParamters() {
-		return parameters;
-	}
-
-	public void setParamters(Parameter[] paramters) {
-		this.parameters = paramters;
+	private void setUrl(String url) {
+		this.url = url;
 	}
 
 	/**
@@ -96,8 +86,9 @@ public class Resource {
 	 * GET POST etc To make sure a correct request method is invoked.
 	 * @throws NotSupportedException 
 	 * @throws ParamConflictException 
+	 * @throws ParamNotAcceptableException 
 	 */
-	private void retrieveMetaInfos() throws NotSupportedException, ParamConflictException {
+	private void retrieveMetaInfos() throws ServerException {
 		if (method == null) {
 			throw new IllegalAccessError("Method must be initialized");
 		}
@@ -109,58 +100,148 @@ public class Resource {
 		retrieveParameters(method);
 	}
 
-	private void retrieveParameters (Method method) throws NotSupportedException, ParamConflictException {
+	private void retrieveParameters (Method method) throws ServerException {
 		PATH path = clazz.getAnnotation(PATH.class);
 
-		setUrl(path.value());
-
-		path = method.getAnnotation(PATH.class);
-
-		if (path != null) {
-			setUrl(getUrl() + path.value());
+		if (!isAcceptableClassUrl(path.value())) {
+			throw new BadFormedUrlException(path.value(), null, clazz);
 		}
 		
-		this.setParamters(method.getParameters());
+		setUrl(path.value()+getMethodUrl());
 		
-		Map<String,ResourceParam> mapper = new HashMap<>();
+		Map<String,ResourceParam> preAnnotatedParamsMapper = new HashMap<>();
 		
+		filterParameters(preAnnotatedParamsMapper);
+		paramsParser(preAnnotatedParamsMapper);
+	}
+	
+	private String getMethodUrl() throws BadFormedUrlException {
+		PATH path = method.getAnnotation(PATH.class);
+
+		if (path == null) {
+			return "";
+		}
+			
+		if (path.value().isEmpty() || !isAcceptableMethodUrl(path.value())) {
+			throw new BadFormedUrlException(path.value(), method, clazz);
+		}
+		
+		return path.value();
+	}
+	
+	private void filterParameters(Map<String,ResourceParam> preAnnotatedParamsMapper) throws ServerException {
+		Parameter[] parameters = method.getParameters();
 		Parameter parameter;
+		
 		for (Integer index = 0; index < parameters.length; ++index ) {
 			parameter = parameters[index];
 			ResourceParam param = new ResourceParam(parameter, index);
 			
 			if (param.hasAnnotation()) { // is annotated
-				annotatedParameters.add(parameter);
 				String value = param.getAnnotationValue();
 				
-				if (mapper.containsKey(value)) {
-					throw new ParamConflictException(value,mapper.get(value).getName(),parameter.getName(),method,clazz);
+				if (!isAcceptableParamUrl(value)) {
+					throw new ParamNotAcceptableException(value, method, clazz);
 				}
 				
-				mapper.put(value, param);
+				if (preAnnotatedParamsMapper.containsKey(value)) {
+					throw new ParamConflictException(value,preAnnotatedParamsMapper.get(value).getName(),parameter.getName(),method,clazz);
+				}
+				
+				preAnnotatedParamsMapper.put(value, param);
 				
 			} else {
-				nonAnnotatedMapper.put(index, param);
+				nonAnnotatedParamsMapper.put(index, param);
 			}
 		}
-		
-		paramsParser(mapper);
+	}
+	
+	/** 
+	 * Check whether a class has a well defined path method
+	 * @param url
+	 * @return
+	 */
+	private boolean isAcceptableClassUrl(String url) {
+		return url.matches("/\\w+(/\\w+)*\\w+");
+	}
+	
+	/** 
+	 * Check whether a method has a well defined path method
+	 * @param url
+	 * @return
+	 */
+	private boolean isAcceptableMethodUrl(String url) {
+		return url.matches("/|(/(\\w+|<(\\w[\\w-]*)>))*");
+	}
+	
+	/** 
+	 * Check whether a param has a well defined path method
+	 * @param url
+	 * @return
+	 */
+	private boolean isAcceptableParamUrl(String url) {
+		return url.matches("<(\\w[\\w-]*)>");
 	}
 	
 	/**
-	 * A param parser from url to resource param parser
-	 * @param path
+	 * A parser of params to create a map of params in order of their 
+	 * declaration in the url. <br>
+	 * 
+	 * Also we'll create a pattern in this method also.
+	 * 
+	 * @param mapper
+	 * @throws UrlParamConfictException 
+	 * @throws BadFormedUrlException 
 	 */
-	private void paramsParser(Map<String,ResourceParam> mapper) {
-		accessors = new ArrayList<String>(Arrays.asList(url.split("/")));
+	private void paramsParser(Map<String,ResourceParam> mapper) throws ServerException {
+		if (annotatedParamsMapper.isEmpty()) {
+			pattern = Pattern.compile(url);
+		}
 		
-		int counter = 0;
-		for (String accessor:accessors) {
-			if (mapper.containsKey(accessor)) {
-				mapper.get(accessor).setRankInUrl(counter);
-				annotatedMapper.put(counter, mapper.get(accessor));
-				counter++;
+		accessors = new ArrayList<String>(Arrays.asList(url.split("/")));
+		Map<String,Boolean> treatedParams = new HashMap<>();
+		StringBuilder pattern = new StringBuilder("");
+		
+		Integer counter = 0;
+		Boolean isWord = false;
+		ResourceParam param;
+		String accessor;
+		
+		for (Integer index = 1; index < accessors.size() ; ++index) {
+			accessor = accessors.get(index);
+			
+			isWord = accessor.matches("\\w*");	
+			if (isWord) {
+				pattern.append("/"+accessor); 
+				continue;
 			}
+			
+			if (!mapper.containsKey(accessor)) {
+				throw new BadFormedUrlException(url, method, clazz);
+			}
+		
+			if (treatedParams.containsKey(accessor)) {
+				throw new UrlParamConfictException(accessor,method,clazz);
+			}
+			
+			param = mapper.get(accessor);
+			param.setRankInUrl(counter);
+			annotatedParamsMapper.put(counter, param);
+			treatedParams.put(accessor, true);
+			
+			pattern.append("/"+param.getPattern());
+			counter++;
+		}
+		
+		this.pattern = Pattern.compile(pattern.toString());
+		
+		/**
+		 * Last check to verify if a correct mapping has been done
+		 * If the two map are different in size then no correct mapping was done
+		 */
+		
+		if (annotatedParamsMapper.size() != mapper.size()) {
+			throw new BadFormedUrlException(url, method, clazz);
 		}
 	}
 	
@@ -220,73 +301,9 @@ public class Resource {
 		return response;
 	}
 
-	
-	/**
-	 * TODO enhance the matching algorithms
-	 * 
-	 * @param url
-	 * @return
-	 */
 	private boolean matches(String url) {
-		String[] path = url.split("/");
-		String[] pathTemplate = this.url.split("/");
-		
-		
-		// /echo/6456/p -> path example
-		// /echo/<id>/p -> pathTemplate example
-
-		// Match application name
-		if (pathTemplate[0].equals(path[0])) {
-			for (int i = 1; i < pathTemplate.length; i++) {
-				// Test if parameter
-				if (pathTemplate[i].startsWith("<")) {
-					for (Parameter p : annotatedParameters) {
-						if (p.getName().equals(pathTemplate[i])) {
-							// if return true, Set value path[i] to parameter
-							if (p.getType().equals(Long.class) && isInteger(path[i])) {
-								Long.valueOf(path[i]);
-							} else if (p.getType().equals(Integer.class) && isInteger(path[i])) {
-								Integer.valueOf(path[i]);
-							} else if (p.getType().equals(Double.class) && isInteger(path[i])) {
-								Double.valueOf(path[i]);
-							} else if (p.getType().equals(String.class)) { // impossible
-																			// avec
-																			// notre
-																			// mod�le
-								// path[i];
-							} else {
-								return false;
-							}
-						}
-					}
-				} else if (!pathTemplate[i].equals(path[i])) {
-					return false;
-				}
-			}
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public static boolean isInteger(String s) {
-		return isInteger(s, 10);
-	}
-
-	private static boolean isInteger(String s, int radix) {
-		if (s.isEmpty())
-			return false;
-		for (int i = 0; i < s.length(); i++) {
-			if (i == 0 && s.charAt(i) == '-') {
-				if (s.length() == 1)
-					return false;
-				else
-					continue;
-			}
-			if (Character.digit(s.charAt(i), radix) < 0)
-				return false;
-		}
-		return true;
+		Matcher matcher = pattern.matcher(url);
+		return matcher.matches();
 	}
 
 	private boolean matches(com.upmc.stl.dar.server.request.Method requestMethod) {
@@ -304,7 +321,6 @@ public class Resource {
 	}
 	
 	/**
-	 * TODO
 	 * Return a list of arguments values in order
 	 * e.g by parsing the demanded resourceUrl at the same time querying the parameters list
 	 * to get the route-param to Parameter match before invoking the method. 
@@ -318,10 +334,10 @@ public class Resource {
 	 * @throws IllegalAccessException 
 	 */
 	private Object[] arguments(String url,Request request,UrlParameters params) throws JsonParseException, JsonMappingException, IOException, IllegalAccessException, IllegalArgumentException {
-		Object[] arguments = new Object[this.parameters.length];
+		Object[] arguments = new Object[this.nonAnnotatedParamsMapper.size()+annotatedParamsMapper.size()];
 		
-		for (Integer index: nonAnnotatedMapper.keySet()) {
-			Class<?> type = nonAnnotatedMapper.get(index).getType();
+		for (Integer index: nonAnnotatedParamsMapper.keySet()) {
+			Class<?> type = nonAnnotatedParamsMapper.get(index).getType();
 			if (type == Request.class) {
 				arguments[index] = request;
 			} else if (type == UrlParameters.class) {
@@ -337,7 +353,7 @@ public class Resource {
 		
 		// 
 
-		if (annotatedMapper.isEmpty()) {
+		if (annotatedParamsMapper.isEmpty()) {
 			return arguments;
 		}
 		
@@ -347,7 +363,7 @@ public class Resource {
 		
 		for (String accessor_:accessors_) {
 			if (!accessors.contains(accessor_) && !accessor_.isEmpty()) {
-				ResourceParam param = annotatedMapper.get(counter);	
+				ResourceParam param = annotatedParamsMapper.get(counter);	
 				arguments[param.getRankInMethod()] = param.valueOf(accessor_);
 				counter++;
 			}
@@ -357,6 +373,11 @@ public class Resource {
 		return arguments;
 	}
 
+	/**
+	 * Converts annotation method to enum.
+	 * @param method
+	 * @return
+	 */
 	private static com.upmc.stl.dar.server.request.Method method(Method method) {
 
 		Annotation[] annotations = method.getAnnotations();
@@ -388,59 +409,41 @@ public class Resource {
 		return null;
 
 	}
-
+	
 	@Override
 	public String toString() {
-		return "Resource [method=" + method + "]";
+		return "Resource [method= \"" + method.getName() + " \" of , class= \"" + clazz.getName() + "\" ]";
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((method == null) ? 0 : method.hashCode());
-		result = prime * result + Arrays.hashCode(parameters);
+		result = prime * result + ((pattern == null) ? 0 : pattern.pattern().hashCode());
 		result = prime * result + ((requestMethod == null) ? 0 : requestMethod.hashCode());
-		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
+	public boolean equals(Object object) {
+		if (this == object)
 			return true;
-		if (obj == null)
+		if (object == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (getClass() != object.getClass())
 			return false;
-		Resource resource = (Resource) obj;
-
-		if (method == null) {
-			if (resource.method != null)
+		Resource resource = (Resource) object;
+		if (pattern == null) {
+			if (resource.pattern != null)
 				return false;
-		} else if (!method.equals(resource.method))
-			return false;
-		if (!Arrays.equals(parameters, resource.parameters))
+		} else if (!pattern.pattern().equals(resource.pattern.pattern()))
 			return false;
 		if (requestMethod != resource.requestMethod)
-			return false;
-		if (url == null) {
-			if (resource.url != null)
-				return false;
-		} else if (!url.equals(resource.url))
 			return false;
 		return true;
 	}
 
-	public String getUrl() {
-		return url;
-	}
-
-	public void setUrl(String url) {
-		this.url = url;
-	}
-
-	public static boolean hasLocalAnnotation(Method method) {
+	protected static boolean hasLocalAnnotation(Method method) {
 		if (method == null) {
 			return false;
 		}
@@ -459,13 +462,5 @@ public class Resource {
 		}
 
 		return false;
-	}
-
-	public Pattern getPattern() {
-		return pattern;
-	}
-
-	public void setPattern(Pattern pattern) {
-		this.pattern = pattern;
 	}
 }

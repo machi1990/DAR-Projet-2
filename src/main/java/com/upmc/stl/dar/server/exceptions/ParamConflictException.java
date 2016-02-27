@@ -2,21 +2,15 @@ package com.upmc.stl.dar.server.exceptions;
 
 import java.lang.reflect.Method;
 
-public class ParamConflictException extends Exception {
+public class ParamConflictException extends ParamNotAcceptableException {
 	private static final long serialVersionUID = -2172134996312041481L;
-	private String value;
 	private String first;
 	private String second;
-	private Method method;
-	private Class<?> clazz;
 	
 	public ParamConflictException(String value, String first, String second, Method method, Class<?> clazz) {
-		super();
-		this.value = value;
+		super(value,method,clazz);
 		this.first = first;
 		this.second = second;
-		this.method = method;
-		this.clazz = clazz;
 	}
 
 	@Override
