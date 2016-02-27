@@ -86,6 +86,11 @@ public class Request {
 		return getUrl().indexOf('.') != -1;
 	}
 	
+	public boolean isForWelcomeFile() {
+		String url = getUrl();
+		return url.isEmpty() || url.matches("/");
+	}
+	
 	@Override
 	public String toString() {
 		return  "Method: "+ this.method.name() + " "+
