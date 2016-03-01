@@ -6,7 +6,7 @@ public class SessionIdGenerator
 {
 	private static final Integer length = 100;
 	
-	public static synchronized String generateUniqueToken() { 
+	public static synchronized String generateToken() { 
 	    byte random[] = new byte[SessionIdGenerator.length];
 	    SecureRandom randomGenerator = new SecureRandom();
 	    StringBuffer buffer = new StringBuffer();

@@ -4,12 +4,12 @@ import com.upmc.stl.dar.server.request.Cookie;
 
 import javafx.util.Pair;
 
-public class Session {
+public class Session extends Cookie {
 	private Cookie cookie = new Cookie();
 	
 	public Session() {
 		super();
-		cookie.setValue(new Pair<String, String>("____sessionID", SessionIdGenerator.generateUniqueToken()));
+		cookie.setValue(new Pair<String, String>("____sessionID", SessionIdGenerator.generateToken()));
 		cookie.setExpires(new Long(30));
 		cookie.setMaxAge(new Long(30));
 	}
