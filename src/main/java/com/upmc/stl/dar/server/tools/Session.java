@@ -7,11 +7,8 @@ import javafx.util.Pair;
 public class Session extends Cookie {
 	private Cookie cookie = new Cookie();
 	
-	public Session() {
+	private Session() {
 		super();
-		cookie.setValue(new Pair<String, String>("____sessionID", SessionIdGenerator.generateToken()));
-		cookie.setExpires(new Long(30));
-		cookie.setMaxAge(new Long(30));
 	}
 	
 	public String getValue() {
@@ -48,5 +45,15 @@ public class Session extends Cookie {
 	@Override
 	public String toString() {
 		return cookie.toString();
+	}
+	
+	public static Session newInstance() {
+		Session session = new Session();
+
+		session.cookie.setValue(new Pair<String, String>("____sessionID", SessionIdGenerator.generateToken()));
+		session.cookie.setExpires(new Long(30));
+		session.cookie.setMaxAge(new Long(30));
+		
+		return session;
 	}
 }
