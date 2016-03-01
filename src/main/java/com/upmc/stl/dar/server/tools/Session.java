@@ -47,7 +47,7 @@ public class Session extends Cookie {
 		return cookie.toString();
 	}
 	
-	public static Session newInstance() {
+	public final static Session newInstance() {
 		Session session = new Session();
 
 		session.cookie.setValue(new Pair<String, String>("____sessionID", SessionIdGenerator.generateToken()));
