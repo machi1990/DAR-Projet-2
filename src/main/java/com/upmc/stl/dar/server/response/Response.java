@@ -64,7 +64,6 @@ public class Response {
 		this.headers.put("Content-Type", type.toString());
 	}
 	
-	
 	public Map<String, Cookie> getCookies() {
 		return Collections.unmodifiableMap(cookies);
 	}
@@ -73,14 +72,18 @@ public class Response {
 		return cookies.get(key);
 	}
 	
-	public void setCookies(Map<String, Cookie> cookies) {
-		this.cookies = cookies;
+	public void addCookies(Map<String, Cookie> cookies) {
+		this.cookies.putAll(cookies);
 	}
 	
-	public void setCookie(String key, String value) {
+	public void addCookie(String key, String value) {
 		cookies.put(key, new Cookie(new Pair<String, String>(key, value)));
 	}
 
+	public void addCookie(Cookie cookie) {
+		cookies.put(cookie.cookieKey(), cookie);
+	}
+	
 	public void build(Object object) {
 		if (object == null) {
 			return;
@@ -89,7 +92,6 @@ public class Response {
 		if (this.body == null) {
 			this.body = new StringBuilder();
 		} 
-		
 		
 		this.body.append(object.toString());
 	}

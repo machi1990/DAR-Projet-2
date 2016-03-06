@@ -11,10 +11,16 @@ public class Cookie {
 	private String path;
 	private String domain;
 	private Date expires;
+	private Long maxAge;
+	
 	private boolean secure = false;
 	private boolean httpOnly = false;
 	private Pair<String,String> cookieValue;
 	
+	public Cookie() {
+		super();
+	}
+
 	/**
 	 * A cookie from a pair of key value
 	 * @param value
@@ -75,32 +81,49 @@ public class Cookie {
 
 
 	/**
-	 * Sets cookies max age	passing number of seconds.
-	 * @param expires
+	 * Sets cookies expires date	passing number of seconds.
+	 * @param second
 	 */
-	public void setMaxAge(Long seconds) {
+	public void setExpires(Long seconds) {
 		this.expires = Date.from(new Date().toInstant().plusSeconds(seconds));
 	}
 
+	/**
+	 * Sets cookie expires date passing number of seconds.
+	 * @param seconds
+	 */
+	public void setExpires(Date expires) {
+		this.expires = expires;
+	}
+	
+	public Long getMaxAge() {
+		return maxAge;
+	}
+
+	/**
+	 * Sets cookie max-age date passing number of seconds.
+	 * @param seconds
+	 */
+	
+	public void setMaxAge(Long seconds) {
+		this.maxAge = seconds;
+	}
+	
 	public boolean isSecure() {
 		return secure;
 	}
-
 
 	public void setSecure(boolean secure) {
 		this.secure = secure;
 	}
 
-
 	public boolean isHttpOnly() {
 		return httpOnly;
 	}
 
-
 	public void setHttpOnly(boolean httpOnly) {
 		this.httpOnly = httpOnly;
 	}
-
 
 	public String getValue() {
 		return cookieValue.getValue();
@@ -113,7 +136,6 @@ public class Cookie {
 	public void setValue(Pair<String,String> value) {
 		this.cookieValue = value;
 	}
-
 
 	@Override
 	public int hashCode() {
@@ -150,6 +172,11 @@ public class Cookie {
 				return false;
 		} else if (!expires.equals(cookie.expires))
 			return false;
+		if (maxAge == null) {
+			if (cookie.maxAge != null)
+				return false;
+		} else if (!maxAge.equals(cookie.maxAge))
+			return false;
 		if (httpOnly != cookie.httpOnly)
 			return false;
 		if (path == null) {
@@ -167,8 +194,6 @@ public class Cookie {
 		return true;
 	}
 
-
-
 	@Override
 	public String toString() {
 		String cookie =  "Cookie: "+ cookieValue.getKey() + "="+ cookieValue.getValue();
@@ -181,11 +206,21 @@ public class Cookie {
 			cookie += "; Expires =" + expires;
 		}
 		
+		if (maxAge != null) {
+			cookie += "; max-age =" + maxAge;
+		}
+		
 		if (domain != null) {
 			cookie += "; Domain =" + domain;
 		}
 		
-		// TODO rest here
+		if (secure) {
+			cookie += "; Secure";
+		}
+		
+		if (httpOnly) {
+			cookie += "; HttpOnly";
+		}
 		
 		return cookie + "\r\n";
 	}
