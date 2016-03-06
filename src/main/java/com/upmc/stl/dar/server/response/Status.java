@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.upmc.stl.dar.server.HttpServer;
+
+
 public enum Status {
 	OK,
 	CREATED,
@@ -92,6 +95,6 @@ public enum Status {
 				return NOT_IMPLEMENTED.toString();
 		}
 		
-		return "HTTP/1.1 "+ map.get(this).get("status_code") + " " + map.get(this).get("text") + "\n\r";
+		return "HTTP/1.1 "+ map.get(this).get("status_code") + " " + map.get(this).get("text") + HttpServer.separtor();
 	}
 }

@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.upmc.stl.dar.server.HttpServer;
+
 import javafx.util.Pair;
 
 public class Cookie {
@@ -226,7 +228,7 @@ public class Cookie {
 			cookie += "; HttpOnly";
 		}
 		
-		return cookie + "\r\n";
+		return cookie + HttpServer.separtor();
 	}
 	
 	/**

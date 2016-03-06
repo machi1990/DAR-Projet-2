@@ -8,7 +8,9 @@ import com.upmc.stl.dar.server.exceptions.ServerException;
 import com.upmc.stl.dar.server.resource.configuration.ResourceConfig;
 
 public class HttpServer {
-	public static final String SERVER_NAME = "HomeMade/0.0.1\r\n";
+	private static final String SEPARATOR = "\r\n";
+	public static final String SERVER_NAME = "HomeMade/0.0.1";
+	
 	private Integer port;
 	private Boolean started = false;
 	private Dispatcher dispatcher = Dispatcher.dispatcher();
@@ -55,6 +57,10 @@ public class HttpServer {
 		}
 	} 
 
+	public static final String separtor() {
+		return SEPARATOR;
+	}
+	
 	public static final void start(int port,ResourceConfig config) throws IOException, IllegalArgumentException, ServerException {
 		if (config == null) {
 			throw new IllegalArgumentException("Can not start server with non registered resources");

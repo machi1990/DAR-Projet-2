@@ -170,8 +170,10 @@ public class Connection implements Runnable {
 		}
 	}
 
-	private Object serve(Request request) {			
-		if (request.matchesStaticResource()) {
+	private Object serve(Request request) {	
+		if (Request.isForWelcomeFile(request) && Asset.hasWelcomeFile()) {
+			return sendFile(Asset.getWelcomeFile());
+		} else if (request.matchesStaticResource()) {
 			return serveStaticFile(request);
 		}
 		
@@ -179,10 +181,6 @@ public class Connection implements Runnable {
 	}
 
 	private Response serveStaticFile(Request request) {
-		if (Request.isForWelcomeFile(request) && Asset.hasWelcomeFile()) {
-			return sendFile(Asset.getWelcomeFile());
-		}	
-		
 		String url = request.getUrl();
 		
 		if (!assets.containsKey(url)) {
@@ -203,8 +201,9 @@ public class Connection implements Runnable {
 		try {
 			String content = asset.sendFile();
 			response = Response.response(Status.OK);
-			response.build(content);
 			response.setContentType(asset.contentType());
+			
+			response.build(content);
 		} catch (IOException e) {
 			response = Response.response(Status.INTERNAL_SERVER_ERROR);
 		}

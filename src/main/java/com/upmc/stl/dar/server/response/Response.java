@@ -30,6 +30,8 @@ public class Response {
 		super();
 		this.status = status;
 		this.headers = headers;
+		this.headers.put("Connection", "close");
+		this.headers.put("Server",HttpServer.SERVER_NAME);
 	}
 	
 	public Response(Status status) {
@@ -48,10 +50,9 @@ public class Response {
 		return headers;
 	}
 	
-	public void setHeaders(Headers headers) {
-		this.headers = headers;
+	public void setHeaders(Map<String, Object> headers) {
+		this.headers.putAll(headers);
 	}
-	
 	
 	public Status getStatus() {
 		return status;
@@ -127,23 +128,19 @@ public class Response {
 
 	@Override
 	public String toString() {
-		long now = new Date().getTime();
+		this.headers.put("Date", new Date().toString());
 		
-		String header =  status +"Date: " + new Date(now)+ "\r\n" 
-		+ "Connection: close" +  "\r\n"+
-		"Server: " + HttpServer.SERVER_NAME + 
-		stringifyCookie() + this.headers;
+		String header =  status + this.headers.toString() + stringifyCookie();
 		
-		return header + "\r\n" +this.body; 
+		return header + this.body; 
 	}
 	
 	private String stringifyCookie() {
 		StringBuilder result = new StringBuilder();
 		for (String key:cookies.keySet()) {
-			result.append("Set-"+ cookies.get(key)+"\r\n"); 
+			result.append("Set-"+ cookies.get(key)); 
 		}
-		
-		return result.toString();
+		return result.toString().isEmpty() ? HttpServer.separtor(): result.toString();
 	}
 	
 	public static Response response(Status status) {

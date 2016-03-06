@@ -38,6 +38,7 @@ import com.upmc.stl.dar.server.exceptions.ExceptionCreator.ExceptionKind;
 public class ResourceConfig {
 	private static final List<ClassLoader> classLoadersList;
 	private Set<Class<?>> classes = new HashSet<>();
+	Map<String,Asset> assets = new HashMap<>();
 	
 	static {
 		classLoadersList = new LinkedList<ClassLoader>();
@@ -143,7 +144,6 @@ public class ResourceConfig {
 	}
 
 	public Map<String,Asset> getAssets() throws IOException {
-		Map<String,Asset> assets = new HashMap<>();
 		ClassLoader loader = getClass().getClassLoader();
 		
 		for (Class<?> clazz:classes) {
@@ -179,6 +179,15 @@ public class ResourceConfig {
 	            assets(base,directory, assets);
 	        }
 	    }
+	}
+	
+	/**
+	 * Make a file located inside under the resources folder a welcome file your application.
+	 * TODO
+	 * @param relativePath
+	 */
+	public final void makeWelcomeFile(String relativePath) {
+		Asset.makeWelcomeFile(assets.get("/"+relativePath));
 	}
 	
 	public static final ResourceConfig newConfiguration() {

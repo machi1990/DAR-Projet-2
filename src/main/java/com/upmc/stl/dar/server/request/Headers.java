@@ -3,6 +3,9 @@ package com.upmc.stl.dar.server.request;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.upmc.stl.dar.server.HttpServer;
+
+
 public class Headers {
 	private Map<String,Object> headers = new HashMap<>();
 	
@@ -55,7 +58,7 @@ public class Headers {
 		String headers = "";
 		
 		for (String header: this.headers.keySet()) {
-			headers += header + ": "+ this.headers.get(header).toString() + "\r\n"; 
+			headers += header + ": "+ this.headers.get(header).toString() + HttpServer.separtor(); 
 		}
 		
 		return headers;
@@ -85,5 +88,9 @@ public class Headers {
 		} else if (!headers.equals(headers_.headers))
 			return false;
 		return true;
+	}
+
+	public void putAll(Map<String, Object> headers) {
+		this.headers.putAll(headers);
 	}
 }
