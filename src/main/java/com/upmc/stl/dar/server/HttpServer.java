@@ -3,10 +3,8 @@ package com.upmc.stl.dar.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Set;
 
 import com.upmc.stl.dar.server.exceptions.ServerException;
-import com.upmc.stl.dar.server.resource.configuration.Resource;
 import com.upmc.stl.dar.server.resource.configuration.ResourceConfig;
 
 public class HttpServer {
@@ -27,8 +25,9 @@ public class HttpServer {
 		}
 	}
 	
-	public void setResources(Set<Resource> resources) {
-		dispatcher.setResources(resources);
+	public final void retrieveResources(ResourceConfig config) throws ServerException, IOException {
+		dispatcher.setResources(config.getResources());
+		dispatcher.setAssets(config.getAssets());
 	}
 
 	public final void start() throws IOException {
@@ -56,13 +55,13 @@ public class HttpServer {
 		}
 	} 
 
-	public static void start(int port,ResourceConfig config) throws IOException, IllegalArgumentException, ServerException {
+	public static final void start(int port,ResourceConfig config) throws IOException, IllegalArgumentException, ServerException {
 		if (config == null) {
 			throw new IllegalArgumentException("Can not start server with non registered resources");
 		}
 		
 		HttpServer server = new HttpServer(port);
-		server.setResources(config.getResources());
+		server.retrieveResources(config);
 		server.start();
 	}
 	
@@ -74,7 +73,7 @@ public class HttpServer {
 		/**
 		 * Registration of all samples applications using their package name.
 		 */
-		ResourceConfig config = new ResourceConfig();
+		ResourceConfig config = ResourceConfig.newConfiguration();
 		config.packages("com.upmc.stl.dar.server.examples");
 		
 		int port = 30000;

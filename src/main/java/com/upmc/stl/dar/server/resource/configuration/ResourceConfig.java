@@ -1,6 +1,9 @@
 package com.upmc.stl.dar.server.resource.configuration;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
@@ -41,7 +45,7 @@ public class ResourceConfig {
 		classLoadersList.add(ClasspathHelper.staticClassLoader());
 	}
 
-	public ResourceConfig() {
+	private ResourceConfig() {
 		super();
 	}
 
@@ -136,5 +140,48 @@ public class ResourceConfig {
 		}
 		
 		return Collections.unmodifiableSet(resources.keySet());
+	}
+
+	public Map<String,Asset> getAssets() throws IOException {
+		Map<String,Asset> assets = new HashMap<>();
+		ClassLoader loader = getClass().getClassLoader();
+		
+		for (Class<?> clazz:classes) {
+			String name = clazz.getAnnotation(PATH.class).value();
+			if (name.charAt(0) == '/') {
+				name = "."+name; 
+			}
+			
+			URL resource =  loader.getResource(name);
+			
+			if (resource == null) {
+				continue;
+			}
+			
+			File directory = new File(resource.getFile());  
+			assets(directory.getParent(),directory,assets);
+		}
+		
+		return assets;
+	}
+		
+	private void assets(final String base,final File directory, Map<String,Asset> assets) throws IOException { 
+	    File[] files = directory.listFiles();
+	    String name;
+	    Asset asset;
+	  
+	    for (File file : files) {
+	        if (file.isFile()) {
+	        	name = file.getAbsolutePath().split(base)[1];
+	        	asset = new Asset(file.toPath());
+	        	assets.put(name, asset);
+	        } else if (file.isDirectory()) {
+	            assets(base,directory, assets);
+	        }
+	    }
+	}
+	
+	public static final ResourceConfig newConfiguration() {
+		return new ResourceConfig();
 	}
 }

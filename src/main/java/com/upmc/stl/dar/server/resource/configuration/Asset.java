@@ -3,37 +3,30 @@ package com.upmc.stl.dar.server.resource.configuration;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
+
+import javax.activation.MimetypesFileTypeMap;
 
 public class Asset {
+	private static MimetypesFileTypeMap typeMapper = new MimetypesFileTypeMap();
 	private static Asset welcomeFile = null;
-	private String absPath;
-	private String type;
+	private Path path;
 	
 	private Asset() {
 		super();
 	}
 
-	protected Asset(String absPath) throws IOException {
+	protected Asset(Path path) throws IOException {
 		super();
-		setAbsPath(absPath);
+		setAbsPath(path);
 	}
 	
-	public String getAbsPath() {
-		return absPath;
-	}
-	
-	protected void setAbsPath(String absPath) throws IOException {
-		this.absPath = absPath;
-		readFile();
-	}
-	
-	private void readFile() throws IOException {
-		type = Files.probeContentType(Paths.get(absPath));
+	protected void setAbsPath(Path path) throws IOException {
+		this.path = path;
 	}
 	
 	public String sendFile() throws IOException {
-		return new String(Files.readAllBytes(Paths.get(absPath)),Charset.defaultCharset());
+		return new String(Files.readAllBytes(path),Charset.defaultCharset());
 	}
 	
 	public void makeWelcomeFile() {
@@ -43,26 +36,25 @@ public class Asset {
 	public Asset clone() {
 		Asset clone = new Asset();
 		
-		clone.type = type;
-		clone.absPath = absPath;
+		clone.path = path;
 		
 		return clone;
 	}
 	
 	public String contentType() {
-		return type;
+		return typeMapper.getContentType(path.toString());
 	}
 	
 	@Override
 	public String toString() {
-		return "Asset [absPath=" + absPath + ", type=" + type + "]";
+		return "Asset [path=" + path +"]";
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((absPath == null) ? 0 : absPath.hashCode());
+		result = prime * result + ((path == null) ? 0 : path.hashCode());
 		return result;
 	}
 	
@@ -76,10 +68,10 @@ public class Asset {
 			return false;
 		
 		Asset asset = (Asset) object;
-		if (absPath == null) {
-			if (asset.absPath != null)
+		if (path == null) {
+			if (asset.path != null)
 				return false;
-		} else if (!absPath.equals(asset.absPath))
+		} else if (!path.equals(asset.path))
 			return false;
 		
 		return true;

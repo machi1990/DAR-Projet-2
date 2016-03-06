@@ -5,6 +5,7 @@ import com.upmc.stl.dar.server.request.Cookie;
 import javafx.util.Pair;
 
 public class Session extends Cookie {
+	public static final String sessionKey = "____sessionID";
 	private Cookie cookie = new Cookie();
 	
 	private Session() {
@@ -13,6 +14,10 @@ public class Session extends Cookie {
 	
 	public String getValue() {
 		return cookie.getValue();
+	}
+
+	public String cookieKey() {
+		return cookie.cookieKey();
 	}
 
 	@Override
@@ -47,13 +52,26 @@ public class Session extends Cookie {
 		return cookie.toString();
 	}
 	
+	/**
+	 * TODO intercept requests and get the session id cookie.
+	 * @return
+	 */
 	public final static Session newInstance() {
 		Session session = new Session();
-
-		session.cookie.setValue(new Pair<String, String>("____sessionID", SessionIdGenerator.generateToken()));
-		session.cookie.setExpires(new Long(30));
-		session.cookie.setMaxAge(new Long(30));
 		
+		session.cookie.setValue(new Pair<String, String>(sessionKey, SessionIdGenerator.generateToken()));
+		session.cookie.setExpires(new Long(30*60));
+		session.cookie.setMaxAge(new Long(30*60));
+		
+		return session;
+	}
+
+	public static Session newInstance(Cookie cookie) {
+		Session session = new Session();
+		session.cookie.setValue(cookie.cookieKey(),cookie.getValue());
+		session.cookie.setExpires(new Long(60*30));
+		session.cookie.setMaxAge(new Long(30*60));
+	
 		return session;
 	}
 }

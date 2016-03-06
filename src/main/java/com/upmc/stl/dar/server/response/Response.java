@@ -9,6 +9,7 @@ import com.upmc.stl.dar.server.HttpServer;
 import com.upmc.stl.dar.server.request.ContentType;
 import com.upmc.stl.dar.server.request.Cookie;
 import com.upmc.stl.dar.server.request.Headers;
+import com.upmc.stl.dar.server.tools.Session;
 
 import javafx.util.Pair;
 
@@ -64,6 +65,10 @@ public class Response {
 		this.headers.put("Content-Type", type.toString());
 	}
 	
+	public void setContentType(String type) {
+		this.headers.put("Content-Type", type);
+	}
+	
 	public Map<String, Cookie> getCookies() {
 		return Collections.unmodifiableMap(cookies);
 	}
@@ -82,6 +87,19 @@ public class Response {
 
 	public void addCookie(Cookie cookie) {
 		cookies.put(cookie.cookieKey(), cookie);
+	}
+	
+	public void newSession() {
+		Session session = Session.newInstance();
+		cookies.put(session.cookieKey(), session);
+	}
+	
+	public void addSession(Session session) {
+		if (session == null) {
+			return;
+		}
+		
+		cookies.put(session.cookieKey(), session);
 	}
 	
 	public void build(Object object) {

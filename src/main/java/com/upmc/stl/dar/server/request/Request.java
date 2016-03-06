@@ -3,6 +3,8 @@ package com.upmc.stl.dar.server.request;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.upmc.stl.dar.server.tools.Session;
+
 public class Request {
 	private String url;
 	private String body;
@@ -32,6 +34,14 @@ public class Request {
 	
 	public Method getMethod() {
 		return method;
+	}
+	
+	public boolean hasActiveSession() {
+		return cookies.containsKey(Session.sessionKey);
+	}
+	
+	public Session newSessionInstance() {
+		return Session.newInstance(cookies.get(Session.sessionKey));
 	}
 	
 	public Map<String, Cookie> getCookies() {
