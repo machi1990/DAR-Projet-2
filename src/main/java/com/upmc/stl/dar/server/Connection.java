@@ -84,9 +84,7 @@ public class Connection implements Runnable {
 				response.build(e.getMessage());
 			}
 			
-			if (!request.hasActiveSession()) {
-				response.newSession();
-			} else {
+			if (request.hasActiveSession()) { // Udate sesion time
 				Session session = request.newSessionInstance();	
 				response.addSession(session);
 			}

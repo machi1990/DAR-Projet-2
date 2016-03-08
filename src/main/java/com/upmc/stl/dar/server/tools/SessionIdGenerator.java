@@ -4,7 +4,7 @@ import java.security.SecureRandom;
 
 public class SessionIdGenerator
 {
-	private static final Integer length = 100;
+	private static final Integer length = 32;
 	
 	public static synchronized String generateToken() { 
 	    byte random[] = new byte[SessionIdGenerator.length];
