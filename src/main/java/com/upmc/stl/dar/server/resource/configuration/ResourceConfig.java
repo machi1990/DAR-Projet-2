@@ -176,7 +176,7 @@ public class ResourceConfig {
 	        	asset = new Asset(file.toPath());
 	        	assets.put(name, asset);
 	        } else if (file.isDirectory()) {
-	            assets(base,directory, assets);
+	            assets(base,file, assets);
 	        }
 	    }
 	}
