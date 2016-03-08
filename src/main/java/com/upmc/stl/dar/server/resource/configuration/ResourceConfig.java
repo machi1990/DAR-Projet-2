@@ -143,7 +143,7 @@ public class ResourceConfig {
 		return Collections.unmodifiableSet(resources.keySet());
 	}
 
-	public Map<String,Asset> getAssets() throws IOException {
+	public Map<String,Asset> getAssets() throws Exception {
 		ClassLoader loader = getClass().getClassLoader();
 		
 		for (Class<?> clazz:classes) {
@@ -158,8 +158,8 @@ public class ResourceConfig {
 				continue;
 			}
 			
-			File directory = new File(resource.getFile());  
-			assets(directory.getParent(),directory,assets);
+			File directory = new File(resource.toURI());  
+			assets(directory.getParent().replace("\\","/"),directory,assets);
 		}
 		
 		return assets;
@@ -172,17 +172,17 @@ public class ResourceConfig {
 	  
 	    for (File file : files) {
 	        if (file.isFile()) {
-	        	name = file.getAbsolutePath().split(base)[1];
+	        	name = file.getAbsolutePath().replace("\\","/").split(base)[1];
 	        	asset = new Asset(file.toPath());
 	        	assets.put(name, asset);
 	        } else if (file.isDirectory()) {
-	            assets(base,file, assets);
+	            assets(base, file, assets);
 	        }
 	    }
 	}
 	
 	/**
-	 * Make a file located inside under the resources folder a welcome file your application.
+	 * Make a file located inside the resources folder a welcome file your application.
 	 * TODO
 	 * @param relativePath
 	 */
@@ -193,4 +193,5 @@ public class ResourceConfig {
 	public static final ResourceConfig newConfiguration() {
 		return new ResourceConfig();
 	}
+	
 }

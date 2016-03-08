@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import com.upmc.stl.dar.server.exceptions.ServerException;
 import com.upmc.stl.dar.server.resource.configuration.ResourceConfig;
 
 public class HttpServer {
@@ -27,7 +26,7 @@ public class HttpServer {
 		}
 	}
 	
-	public final void retrieveResources(ResourceConfig config) throws ServerException, IOException {
+	public final void retrieveResources(ResourceConfig config) throws Exception {
 		dispatcher.setResources(config.getResources());
 		dispatcher.setAssets(config.getAssets());
 	}
@@ -61,7 +60,7 @@ public class HttpServer {
 		return SEPARATOR;
 	}
 	
-	public static final void start(int port,ResourceConfig config) throws IOException, IllegalArgumentException, ServerException {
+	public static final void start(int port,ResourceConfig config) throws Exception {
 		if (config == null) {
 			throw new IllegalArgumentException("Can not start server with non registered resources");
 		}
@@ -71,7 +70,7 @@ public class HttpServer {
 		server.start();
 	}
 	
-	public static void main(String[] args) throws IOException, IllegalArgumentException, ServerException {
+	public static void main(String[] args) throws Exception {
 		/**
 		 * TODO get port argument from args
 		 */
