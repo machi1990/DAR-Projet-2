@@ -1,4 +1,4 @@
-package com.upmc.stl.dar.server.resource.configuration;
+package com.upmc.stl.dar.server.configuration.resources;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +25,7 @@ import com.upmc.stl.dar.server.annotation.PATH;
 import com.upmc.stl.dar.server.exceptions.ServerException;
 import com.upmc.stl.dar.server.exceptions.ExceptionCreator;
 import com.upmc.stl.dar.server.exceptions.ExceptionCreator.ExceptionKind;
+
 
 /**
  *  TODO

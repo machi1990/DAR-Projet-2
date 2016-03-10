@@ -1,6 +1,6 @@
 package com.upmc.stl.dar.server.exceptions;
 
-import com.upmc.stl.dar.server.resource.configuration.Resource;
+import com.upmc.stl.dar.server.configuration.resources.Resource;
 
 public class UrlConfictException extends ServerException {
 	private static final long serialVersionUID = -366801941695376846L;

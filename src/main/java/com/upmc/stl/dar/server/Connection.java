@@ -14,14 +14,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.upmc.stl.dar.server.configuration.resources.Asset;
+import com.upmc.stl.dar.server.configuration.resources.Resource;
 import com.upmc.stl.dar.server.exceptions.ExceptionCreator;
 import com.upmc.stl.dar.server.exceptions.ExceptionCreator.ExceptionKind;
 import com.upmc.stl.dar.server.exceptions.ServerException;
 import com.upmc.stl.dar.server.request.ContentType;
 import com.upmc.stl.dar.server.request.Headers;
 import com.upmc.stl.dar.server.request.Request;
-import com.upmc.stl.dar.server.resource.configuration.Asset;
-import com.upmc.stl.dar.server.resource.configuration.Resource;
 import com.upmc.stl.dar.server.response.Response;
 import com.upmc.stl.dar.server.response.Status;
 import com.upmc.stl.dar.server.tools.Session;

@@ -2,7 +2,7 @@ package com.upmc.stl.dar.server.exceptions;
 
 import java.lang.reflect.Method;
 
-import com.upmc.stl.dar.server.resource.configuration.Resource;
+import com.upmc.stl.dar.server.configuration.resources.Resource;
 
 public class ExceptionCreator {
 	private static ExceptionCreator creator = new ExceptionCreator();

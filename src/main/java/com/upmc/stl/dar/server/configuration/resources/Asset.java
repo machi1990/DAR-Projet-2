@@ -1,4 +1,4 @@
-package com.upmc.stl.dar.server.resource.configuration;
+package com.upmc.stl.dar.server.configuration.resources;
 
 import java.io.IOException;
 import java.nio.charset.Charset;

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import com.upmc.stl.dar.server.resource.configuration.ResourceConfig;
+import com.upmc.stl.dar.server.configuration.resources.ResourceConfig;
 
 public class HttpServer {
 	private static final String SEPARATOR = "\r\n";

@@ -7,8 +7,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.upmc.stl.dar.server.resource.configuration.Asset;
-import com.upmc.stl.dar.server.resource.configuration.Resource;
+import com.upmc.stl.dar.server.configuration.resources.Asset;
+import com.upmc.stl.dar.server.configuration.resources.Resource;
 
 public class Dispatcher {
 	private static Dispatcher dispatcher = new Dispatcher();
