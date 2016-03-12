@@ -32,7 +32,10 @@ public class ViewParser {
 		return new View(source);
 	}
 	
-	public static void main(String[] args) throws IOException {
-		System.out.println(parses());
+	public static void main(String[] args) throws Exception {
+		Map<String,View>  views = parses();
+		for (String key:views.keySet()) {
+			System.out.println(views.get(key).build(key, new HashMap<>()));
+		}
 	}
 }

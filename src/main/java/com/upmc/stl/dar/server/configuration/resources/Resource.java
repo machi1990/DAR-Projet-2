@@ -272,7 +272,7 @@ public class Resource {
 
 		if (result instanceof Response) {
 			return result;
-		}
+		} 
 
 		Response response = Response.response(Status.OK);
 
@@ -287,11 +287,10 @@ public class Resource {
 		if (producesJSON()) {
 			response.setContentType(ContentType.JSON);
 			response.build(Jsonfier.jsonfy(result));
-		} else {
-			response.build(result);
-		}
+			return response;
+		} 
 		
-		return response;
+		return result;
 	}
 
 	private boolean matches(String url) {
@@ -457,4 +456,5 @@ public class Resource {
 
 		return false;
 	}
+	
 }

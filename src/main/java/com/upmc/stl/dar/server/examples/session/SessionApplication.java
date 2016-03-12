@@ -1,11 +1,14 @@
 package com.upmc.stl.dar.server.examples.session;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import com.upmc.stl.dar.server.annotation.GET;
 import com.upmc.stl.dar.server.annotation.PATH;
 import com.upmc.stl.dar.server.annotation.POST;
+import com.upmc.stl.dar.server.configuration.views.Model2View;
 import com.upmc.stl.dar.server.request.ContentType;
 import com.upmc.stl.dar.server.request.Request;
 import com.upmc.stl.dar.server.request.UrlParameters;
@@ -28,6 +31,18 @@ public class SessionApplication {
 		response.build("find subscribe.html");
 		
 		return response;
+	}
+	
+	@GET
+	@PATH("/subscribe/test")
+	public Model2View getSubscribeTest(){
+		Model2View view = new Model2View("/views/subscribe.html");
+		ArrayList<String> values = new ArrayList<>();
+		values.add("Mambooooo");
+		values.add("POAAA");
+		values.add("SHWAAARI");
+		view.put("origin",values);
+		return view;
 	}
 	
 	@POST

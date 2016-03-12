@@ -16,6 +16,8 @@ import java.util.Set;
 
 import com.upmc.stl.dar.server.configuration.resources.Asset;
 import com.upmc.stl.dar.server.configuration.resources.Resource;
+import com.upmc.stl.dar.server.configuration.views.Model2View;
+import com.upmc.stl.dar.server.configuration.views.View;
 import com.upmc.stl.dar.server.exceptions.ExceptionCreator;
 import com.upmc.stl.dar.server.exceptions.ExceptionCreator.ExceptionKind;
 import com.upmc.stl.dar.server.exceptions.ServerException;
@@ -33,6 +35,7 @@ public class Connection implements Runnable {
 	private Socket socket;
 	private Set<Resource> resources = new HashSet<>();
 	private Map<String,Asset> assets = new HashMap<>();
+	private Map<String, View> views = new HashMap<>();
 	
 	protected Connection(Socket socket) {
 		this.socket = socket;
@@ -54,6 +57,14 @@ public class Connection implements Runnable {
 		return this;
 	}
 	
+	protected  Connection setViews(Map<String, View> views) {
+		synchronized (views) {
+			this.views = Collections.unmodifiableMap(views);
+		}
+		
+		return this;
+	}
+
 	public void run() {
 		BufferedWriter writer = null;
 
@@ -84,7 +95,7 @@ public class Connection implements Runnable {
 				response.build(e.getMessage());
 			}
 			
-			if (request.hasActiveSession()) { // Udate sesion time
+			if (request.hasActiveSession()) { // Update session time
 				Session session = request.newSessionInstance();	
 				response.addSession(session);
 			}
@@ -226,9 +237,37 @@ public class Connection implements Runnable {
 			}
 		}
 		
-		return response;
+		return interceptResponse(response);
 	}
 	
+	private Object interceptResponse (Object intercepted) {
+		if (! (intercepted instanceof Model2View)) {
+			return intercepted;
+		}
+		
+		Model2View model2View = (Model2View)intercepted;
+		
+		if (!views.containsKey(model2View.getTemplate())) {
+			return Response.response(Status.NOT_FOUND);
+		}
+		
+		Response response;
+		
+		View view = views.get(model2View.getTemplate());
+		
+		try {
+			String content = view.build(model2View.getTemplate(), model2View.getEnvironment());
+			response = Response.response(Status.OK);
+			response.setContentType(ContentType.HTML);
+			response.build(content);
+		} catch (Exception e) {
+			response = Response.response(Status.INTERNAL_SERVER_ERROR);
+			response.setContentType(ContentType.HTML);
+			response.build(e.getMessage());
+		}
+		
+		return response;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;

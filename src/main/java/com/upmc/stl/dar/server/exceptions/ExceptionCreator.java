@@ -78,6 +78,25 @@ public class ExceptionCreator {
 		return new UrlConfictException(first, second);
 	}
 	
+	
+
+	/**
+	 * Creates a template evaluation exception.
+	 * @param kind
+	 * @param value
+	 * @param method
+	 * @param clazz
+	 * @return
+	 */
+	public ServerException create(ExceptionKind kind,String template, String expresion) {
+		switch (kind) {
+		case EVAL:
+			return new EvaluationException(template, expresion);
+		default:
+			return exception;
+		}
+	}
+	
 	public static enum ExceptionKind {
 		BAD_INPUT,
 		BAD_FORMED_URL,
@@ -86,7 +105,8 @@ public class ExceptionCreator {
 		PARAM_NOT_ACCEPTABLE,
 		NOT_FOUND,
 		URL_CONFLICT,
-		URL_PARAM_CONFLICT
+		URL_PARAM_CONFLICT,
+		EVAL
 	}
 	
 	public synchronized static ExceptionCreator creator() {

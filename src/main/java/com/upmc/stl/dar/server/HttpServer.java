@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import com.upmc.stl.dar.server.configuration.resources.ResourceConfig;
+import com.upmc.stl.dar.server.configuration.views.ViewParser;
 
 public class HttpServer {
 	private static final String SEPARATOR = "\r\n";
@@ -29,6 +30,7 @@ public class HttpServer {
 	public final void retrieveResources(ResourceConfig config) throws Exception {
 		dispatcher.setResources(config.getResources());
 		dispatcher.setAssets(config.getAssets());
+		dispatcher.setViews(ViewParser.parses());
 	}
 
 	public final void start() throws IOException {
