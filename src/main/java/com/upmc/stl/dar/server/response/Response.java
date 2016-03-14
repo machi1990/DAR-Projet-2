@@ -30,7 +30,7 @@ public class Response {
 		super();
 		this.status = status;
 		this.headers = headers;
-		this.headers.put("Connection", "close");
+		this.headers.put("Connection", "keep-alive");
 		this.headers.put("Server",HttpServer.SERVER_NAME);
 	}
 	

@@ -43,8 +43,10 @@ public class Headers {
 			this.headers.put("Content-Type",ContentType.HTML);
 		} else if (type.contains("/json")) {
 			this.headers.put("Content-Type",ContentType.JSON);
-		} else {
+		} else if (type.contains("plain")){
 			this.headers.put("Content-Type",ContentType.PLAIN);
+		} else {
+			this.headers.put("Content-Type",type);
 		}
 	}
 	

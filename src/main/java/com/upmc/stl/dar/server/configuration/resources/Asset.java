@@ -1,16 +1,15 @@
 package com.upmc.stl.dar.server.configuration.resources;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import javax.activation.MimetypesFileTypeMap;
+import java.util.Base64;
 
 public class Asset {
-	private static MimetypesFileTypeMap typeMapper = new MimetypesFileTypeMap();
 	private static Asset welcomeFile = null;
 	private Path path;
+	private String contentType;
 	
 	private Asset() {
 		super();
@@ -23,10 +22,17 @@ public class Asset {
 	
 	protected void setAbsPath(Path path) throws IOException {
 		this.path = path;
+		contentType = FileContentType.getType(path.toString());
 	}
 	
 	public String sendFile() throws IOException {
-		return new String(Files.readAllBytes(path),Charset.defaultCharset());
+		byte[] content = Files.readAllBytes(path);
+		
+		if (contentType.startsWith("text") || contentType.endsWith("/json")) {
+			return new String(content);
+		}
+		
+		return  "data:"+ contentType + ";base64," + Base64.getEncoder().encodeToString(content);		
 	}
 	
 	public void makeWelcomeFile() {
@@ -42,7 +48,7 @@ public class Asset {
 	}
 	
 	public String contentType() {
-		return typeMapper.getContentType(path.toString());
+		return contentType;
 	}
 	
 	@Override
