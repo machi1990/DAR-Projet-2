@@ -57,6 +57,7 @@ public class FileContentType {
         fileExtensionMap.put("odi", "application/vnd.oasis.opendocument.image");
         fileExtensionMap.put("oxt", "application/vnd.openofficeorg.extension");
         fileExtensionMap.put("css", "text/css");
+        fileExtensionMap.put("js", "text/javascript");
     }
     
 	protected static String getType(String fileName) {
@@ -64,8 +65,7 @@ public class FileContentType {
         String contentType = mimeTypes.getContentTypeFor(fileName);
         
         if (contentType == null || contentType.trim().isEmpty()) {
-            String extension = Files.getFileExtension(fileName);
-            contentType = fileExtensionMap.get(extension);
+            contentType = fileExtensionMap.get(extension(fileName));
         }
         
         if (contentType == null ) {
@@ -74,4 +74,8 @@ public class FileContentType {
         
         return contentType;
     }
+	
+	protected static String extension(String fileName) {
+		return Files.getFileExtension(fileName);
+	}
 }

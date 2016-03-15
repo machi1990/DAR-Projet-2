@@ -132,7 +132,7 @@ public class Response {
 		
 		String header =  status + this.headers.toString() + stringifyCookie();
 		
-		return header + this.body; 
+		return header.replaceAll(HttpServer.separtor()+"{2,}", "") + this.body; 
 	}
 	
 	private String stringifyCookie() {

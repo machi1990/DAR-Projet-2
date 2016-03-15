@@ -1,10 +1,9 @@
 package com.upmc.stl.dar.server;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -66,29 +65,35 @@ public class Connection implements Runnable {
 	}
 
 	public void run() {
-		BufferedWriter writer = null;
+		OutputStream writer = null;
 
 		try {
 			socket.setSoTimeout(1);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			writer = socket.getOutputStream();
 
 			Request request = new Request();
-			Response response;
+			Response response = Response.response(Status.OK);
 			String stringRequest = readInput(reader);
 
 			try {
 				afterInputRetrieved(stringRequest, request);
+				Object result;
 				
-				Object result = serve(request);
-				
-				if (result instanceof Response) {
-					response = (Response) result;
+				if (Request.isForWelcomeFile(request) && Asset.hasWelcomeFile()) {
+					sendFile(Asset.getWelcomeFile(),response,socket.getOutputStream());
+				} else if (request.matchesStaticResource()) {
+					serveStaticFile(request,response,socket.getOutputStream());
 				} else {
-					response = Response.response(Status.OK);
-					response.setContentType(request.getHeaders().contentType());
-					response.build(result);
-				}	
+					 result = serve(request);
+					 if (result instanceof Response) {
+							response = (Response) result;
+						} else {
+							response = Response.response(Status.OK);
+							response.setContentType(request.getHeaders().contentType());
+							response.build(result);
+						}	
+				}
 			} catch (ServerException e) {
 				response = Response.response(Status.INTERNAL_SERVER_ERROR);
 				response.setContentType(ContentType.PLAIN);
@@ -100,7 +105,7 @@ public class Connection implements Runnable {
 				response.addSession(session);
 			}
 			
-			writer.write(response.toString());
+			writer.write(response.toString().getBytes());
 			System.err.println("Client connexion closed");
 
 			writer.flush();
@@ -180,44 +185,31 @@ public class Connection implements Runnable {
 	}
 
 	private Object serve(Request request) {	
-		if (Request.isForWelcomeFile(request) && Asset.hasWelcomeFile()) {
-			return sendFile(Asset.getWelcomeFile());
-		} else if (request.matchesStaticResource()) {
-			return serveStaticFile(request);
-		}
-		
 		return invoke(request);
 	}
 
-	private Response serveStaticFile(Request request) {
+	private void serveStaticFile(Request request,Response response, OutputStream out) throws IOException, ServerException {
 		String url = request.getUrl();
 		
 		if (!assets.containsKey(url)) {
-			return Response.response(Status.NOT_FOUND);
+			throw ExceptionCreator.creator().create(ExceptionKind.NOT_FOUND);
 		}
 		
 		Asset asset = assets.get(url);	
-		return sendFile(asset);	
+		sendFile(asset,response,out);	
 	}
 	
-	private Response sendFile (Asset asset) {
+	private void sendFile (Asset asset,Response response2, OutputStream stream) throws IOException {
 		Response response;
 		
 		if (asset == null) {
-			return Response.response(Status.NOT_FOUND);
+			return;
 		}
+	
+		response = Response.response(Status.OK);
+		response.setContentType(asset.contentType());
+		asset.sendFile(response, stream);
 		
-		try {
-			String content = asset.sendFile();
-			response = Response.response(Status.OK);
-			response.setContentType(asset.contentType());
-			
-			response.build(content);
-		} catch (IOException e) {
-			response = Response.response(Status.INTERNAL_SERVER_ERROR);
-		}
-		
-		return response;
 	}
 	
 	private Object invoke(Request request) {

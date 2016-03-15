@@ -147,20 +147,11 @@ public class ResourceConfig {
 	public Map<String,Asset> getAssets() throws Exception {
 		ClassLoader loader = getClass().getClassLoader();
 		
-		for (Class<?> clazz:classes) {
-			String name = clazz.getAnnotation(PATH.class).value();
-			if (name.charAt(0) == '/') {
-				name = "."+name; 
-			}
-			
-			URL resource =  loader.getResource(name);
-			
-			if (resource == null) {
-				continue;
-			}
-			
+		URL resource =  loader.getResource("webapp");
+		
+		if (resource != null) {
 			File directory = new File(resource.toURI());  
-			assets(directory.getParent().replace("\\","/"),directory,assets);
+			assets(directory.getAbsolutePath().replace("\\","/"),directory,assets);
 		}
 		
 		return assets;
