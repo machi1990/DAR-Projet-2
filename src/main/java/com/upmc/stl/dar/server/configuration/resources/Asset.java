@@ -46,17 +46,6 @@ public class Asset {
 		response.setContentType(contentType());
 		response.build("");
 		out.write(response.toString().getBytes());
-		
-		if (contentType.startsWith("text") || contentType.endsWith("/json")) {
-			out.write(Files.readAllBytes(path));
-			return;
-		} else if (contentType.startsWith("image")) {
-			 ByteArrayOutputStream stream = new ByteArrayOutputStream();
-			 ImageIO.write(ImageIO.read(path.toFile()), FileContentType.extension(path.toString()), stream); 
-			 stream.writeTo(out);
-			 return;
-		}
-		
 		out.write(Files.readAllBytes(path));
 	}
 	

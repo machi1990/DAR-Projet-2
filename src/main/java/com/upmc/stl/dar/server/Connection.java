@@ -78,44 +78,50 @@ public class Connection implements Runnable {
 
 			try {
 				afterInputRetrieved(stringRequest, request);
-				Object result;
 				
 				if (Request.isForWelcomeFile(request) && Asset.hasWelcomeFile()) {
-					sendFile(Asset.getWelcomeFile(),response,socket.getOutputStream());
+					sendFile(Asset.getWelcomeFile(),request,response,socket.getOutputStream());
 				} else if (request.matchesStaticResource()) {
 					serveStaticFile(request,response,socket.getOutputStream());
 				} else {
-					 result = serve(request);
-					 if (result instanceof Response) {
-							response = (Response) result;
-						} else {
-							response = Response.response(Status.OK);
-							response.setContentType(request.getHeaders().contentType());
-							response.build(result);
-						}	
+					 serveDynamicResource(writer, request);
 				}
-			} catch (ServerException e) {
+			} catch (ServerException | IOException e) {
 				response = Response.response(Status.INTERNAL_SERVER_ERROR);
 				response.setContentType(ContentType.PLAIN);
 				response.build(e.getMessage());
+				//writer.write(response.toString().getBytes());
+				/**
+				 * TODO 
+				 */
+			} finally {
+				writer.flush();
+				writer.close();
+				reader.close();
+				socket.close();
+				System.err.println("Client connexion closed");
 			}
-			
-			if (request.hasActiveSession()) { // Update session time
-				Session session = request.newSessionInstance();	
-				response.addSession(session);
-			}
-			
-			writer.write(response.toString().getBytes());
-			System.err.println("Client connexion closed");
-
-			writer.flush();
-			writer.close();
-			reader.close();
-			socket.close();
-
 		} catch (IOException e) {
 			System.err.println("Error in Connection.run()");
 		}
+	}
+
+	private void serveDynamicResource(OutputStream writer, Request request) throws IOException {
+		Response response;
+		Object result = invoke(request);
+		 if (result instanceof Response) {
+				response = (Response) result;
+			} else {
+				response = Response.response(Status.OK);
+				response.setContentType(request.getHeaders().contentType());
+				response.build(result);
+			}
+		 
+		 if (request.hasActiveSession()) { // Update session time
+				Session session = request.sessionInstance();	
+				response.addSession(session);
+			}
+		 writer.write(response.toString().getBytes());
 	}
 
 	private String readInput(BufferedReader reader) throws IOException {
@@ -184,10 +190,6 @@ public class Connection implements Runnable {
 		}
 	}
 
-	private Object serve(Request request) {	
-		return invoke(request);
-	}
-
 	private void serveStaticFile(Request request,Response response, OutputStream out) throws IOException, ServerException {
 		String url = request.getUrl();
 		
@@ -195,21 +197,23 @@ public class Connection implements Runnable {
 			throw ExceptionCreator.creator().create(ExceptionKind.NOT_FOUND);
 		}
 		
-		Asset asset = assets.get(url);	
-		sendFile(asset,response,out);	
+		Asset asset = assets.get(url);
+		
+		sendFile(asset,request,response,out);	
 	}
 	
-	private void sendFile (Asset asset,Response response2, OutputStream stream) throws IOException {
-		Response response;
-		
+	private void sendFile (Asset asset,Request request,Response response, OutputStream stream) throws IOException {
 		if (asset == null) {
 			return;
 		}
 	
+		if (request.hasActiveSession()) { // Update session time
+			Session session = request.sessionInstance();	
+			response.addSession(session);
+		}
 		response = Response.response(Status.OK);
 		response.setContentType(asset.contentType());
-		asset.sendFile(response, stream);
-		
+		asset.sendFile(response, stream);	
 	}
 	
 	private Object invoke(Request request) {

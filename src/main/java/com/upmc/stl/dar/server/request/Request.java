@@ -40,7 +40,7 @@ public class Request {
 		return cookies.containsKey(Session.sessionKey);
 	}
 	
-	public Session newSessionInstance() {
+	public Session sessionInstance() {
 		return Session.newInstance(cookies.get(Session.sessionKey));
 	}
 	

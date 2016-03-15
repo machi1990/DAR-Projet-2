@@ -30,7 +30,8 @@ public class Response {
 		super();
 		this.status = status;
 		this.headers = headers;
-		this.headers.put("Connection", "keep-alive");
+		this.body = new StringBuilder();
+		this.headers.put("Connection", "close");
 		this.headers.put("Server",HttpServer.SERVER_NAME);
 	}
 	
@@ -108,13 +109,12 @@ public class Response {
 			return;
 		}
 		
-		if (this.body == null) {
-			this.body = new StringBuilder();
-		} 
-		
 		this.body.append(object.toString());
 	}
 	
+	/**
+	 * TODO
+	 */
 	public void write() {
 		if (this.body == null) {
 			this.body = new StringBuilder("");

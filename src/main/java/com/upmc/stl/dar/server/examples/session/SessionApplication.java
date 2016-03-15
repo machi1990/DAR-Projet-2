@@ -70,7 +70,7 @@ public class SessionApplication {
 				response.build("build error message : wrong password");
 			} else {
 				response.build("send index page");
-				connectedId.put(request.newSessionInstance().getValue(), account.getId());
+				connectedId.put(request.sessionInstance().getValue(), account.getId());
 			}
 		}
 		
@@ -85,7 +85,7 @@ public class SessionApplication {
 		response.build("");
 		
 		if (request.hasActiveSession()) {
-			connectedId.remove(request.newSessionInstance().getValue());
+			connectedId.remove(request.sessionInstance().getValue());
 		}
 		
 		
@@ -101,10 +101,10 @@ public class SessionApplication {
 		
 		if(!request.hasActiveSession()){
 			// Connectez vous !
-		} else if (connectedId.get(request.newSessionInstance()) == null){
+		} else if (connectedId.get(request.sessionInstance()) == null){
 			
 		} else {
-			accounts.get(connectedId.get(request.newSessionInstance()));
+			accounts.get(connectedId.get(request.sessionInstance()));
 		}
 		
 		return response;
