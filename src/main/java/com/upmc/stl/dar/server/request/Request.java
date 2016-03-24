@@ -173,4 +173,12 @@ public class Request {
 		String url = request.getUrl();
 		return url.isEmpty() || url.matches("/");
 	}
+
+	public void clearSession() {
+		if (!hasActiveSession()) {
+			return;
+		}
+		
+		this.headers.remove(Session.sessionKey);
+	}
 }

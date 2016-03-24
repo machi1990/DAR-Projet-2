@@ -33,9 +33,9 @@ import com.upmc.stl.dar.server.tools.Session;
 public class Connection implements Runnable {
 	private Socket socket;
 	private Set<Resource> resources = new HashSet<>();
-	private Map<String,Asset> assets = new HashMap<>();
+	private Map<String, Asset> assets = new HashMap<>();
 	private Map<String, View> views = new HashMap<>();
-	
+
 	protected Connection(Socket socket) {
 		this.socket = socket;
 	}
@@ -44,23 +44,23 @@ public class Connection implements Runnable {
 		synchronized (resources) {
 			this.resources = Collections.unmodifiableSet(resources);
 		}
-		
+
 		return this;
 	}
-	
-	protected Connection setAssets(Map<String,Asset> assets) {
+
+	protected Connection setAssets(Map<String, Asset> assets) {
 		synchronized (assets) {
 			this.assets = Collections.unmodifiableMap(assets);
 		}
-		
+
 		return this;
 	}
-	
-	protected  Connection setViews(Map<String, View> views) {
+
+	protected Connection setViews(Map<String, View> views) {
 		synchronized (views) {
 			this.views = Collections.unmodifiableMap(views);
 		}
-		
+
 		return this;
 	}
 
@@ -78,21 +78,21 @@ public class Connection implements Runnable {
 
 			try {
 				afterInputRetrieved(stringRequest, request);
-				
+
 				if (Request.isForWelcomeFile(request) && Asset.hasWelcomeFile()) {
-					sendFile(Asset.getWelcomeFile(),request,response,socket.getOutputStream());
+					sendFile(Asset.getWelcomeFile(), request, response, socket.getOutputStream());
 				} else if (request.matchesStaticResource()) {
-					serveStaticFile(request,response,socket.getOutputStream());
+					serveStaticFile(request, response, socket.getOutputStream());
 				} else {
-					 serveDynamicResource(writer, request);
+					serveDynamicResource(writer, request);
 				}
 			} catch (ServerException | IOException e) {
 				response = Response.response(Status.INTERNAL_SERVER_ERROR);
 				response.setContentType(ContentType.PLAIN);
 				response.build(e.getMessage());
-				//writer.write(response.toString().getBytes());
+				// writer.write(response.toString().getBytes());
 				/**
-				 * TODO 
+				 * TODO
 				 */
 			} finally {
 				writer.flush();
@@ -109,19 +109,19 @@ public class Connection implements Runnable {
 	private void serveDynamicResource(OutputStream writer, Request request) throws IOException {
 		Response response;
 		Object result = invoke(request);
-		 if (result instanceof Response) {
-				response = (Response) result;
-			} else {
-				response = Response.response(Status.OK);
-				response.setContentType(request.getHeaders().contentType());
-				response.build(result);
-			}
-		 
-		 if (request.hasActiveSession()) { // Update session time
-				Session session = request.sessionInstance();	
-				response.addSession(session);
-			}
-		 writer.write(response.toString().getBytes());
+		if (result instanceof Response) {
+			response = (Response) result;
+		} else {
+			response = Response.response(Status.OK);
+			response.setContentType(request.getHeaders().contentType());
+			response.build(result);
+		}
+
+		if (request.hasActiveSession()) { // Update session time
+			response.addSession(request.sessionInstance());
+		}
+		
+		writer.write(response.toString().getBytes());
 	}
 
 	private String readInput(BufferedReader reader) throws IOException {
@@ -139,7 +139,7 @@ public class Connection implements Runnable {
 		return builder.toString();
 	}
 
-	private void afterInputRetrieved(String input, Request request) throws ServerException  {
+	private void afterInputRetrieved(String input, Request request) throws ServerException {
 		String[] inputs = input.split("\r\n");
 		Headers headers = new Headers();
 
@@ -190,67 +190,69 @@ public class Connection implements Runnable {
 		}
 	}
 
-	private void serveStaticFile(Request request,Response response, OutputStream out) throws IOException, ServerException {
+	private void serveStaticFile(Request request, Response response, OutputStream out)
+			throws IOException, ServerException {
 		String url = request.getUrl();
-		
+
 		if (!assets.containsKey(url)) {
 			throw ExceptionCreator.creator().create(ExceptionKind.NOT_FOUND);
 		}
-		
+
 		Asset asset = assets.get(url);
-		
-		sendFile(asset,request,response,out);	
+
+		sendFile(asset, request, response, out);
 	}
-	
-	private void sendFile (Asset asset,Request request,Response response, OutputStream stream) throws IOException {
+
+	private void sendFile(Asset asset, Request request, Response response, OutputStream stream) throws IOException {
 		if (asset == null) {
 			return;
 		}
-	
+
 		if (request.hasActiveSession()) { // Update session time
-			Session session = request.sessionInstance();	
+			Session session = request.sessionInstance();
 			response.addSession(session);
 		}
 		response = Response.response(Status.OK);
 		response.setContentType(asset.contentType());
-		asset.sendFile(response, stream);	
+		asset.sendFile(response, stream);
 	}
-	
+
 	private Object invoke(Request request) {
 		Object response = Response.response(Status.NOT_IMPLEMENTED);
-		
-		for (Resource resource: resources) {
+
+		for (Resource resource : resources) {
 			try {
 				response = resource.invoke(request);
 				break;
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException | IOException e) {
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+					| InstantiationException | IOException e) {
 				Response response_ = Response.response(Status.INTERNAL_SERVER_ERROR);
 				response_.build(e.getMessage());
 				return response_;
 			} catch (ServerException notMatchedException) {
 				// Catch and continue
-				
+
 			}
 		}
-		
+
 		return interceptResponse(response);
 	}
-	
-	private Object interceptResponse (Object intercepted) {
-		if (! (intercepted instanceof Model2View)) {
+
+	private Object interceptResponse(Object intercepted) {
+		if (!(intercepted instanceof Model2View)) {
 			return intercepted;
 		}
-		
-		Model2View model2View = (Model2View)intercepted;
-		
+
+		Model2View model2View = (Model2View) intercepted;
+
 		if (!views.containsKey(model2View.getTemplate())) {
 			return Response.response(Status.NOT_FOUND);
 		}
-		
+
 		Response response;
-		
+
 		View view = views.get(model2View.getTemplate());
-		
+
 		try {
 			String content = view.build(model2View.getTemplate(), model2View.getEnvironment());
 			response = Response.response(Status.OK);
@@ -261,9 +263,10 @@ public class Connection implements Runnable {
 			response.setContentType(ContentType.HTML);
 			response.build(e.getMessage());
 		}
-		
+
 		return response;
 	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

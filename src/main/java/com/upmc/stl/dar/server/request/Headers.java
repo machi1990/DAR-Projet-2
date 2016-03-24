@@ -95,4 +95,8 @@ public class Headers {
 	public void putAll(Map<String, Object> headers) {
 		this.headers.putAll(headers);
 	}
+
+	public void remove(String key) {
+		this.headers.remove(key);
+	}
 }

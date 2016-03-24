@@ -10,6 +10,7 @@ import com.upmc.stl.dar.server.HttpServer;
 public enum Status {
 	OK,
 	CREATED,
+	REDIRECT,
 	ACCEPTED,
 	NO_CONTENT,
 	FOUND,
@@ -48,6 +49,11 @@ public enum Status {
 		mapped.put("text","No Content");
 		map.put(NO_CONTENT,mapped);
 
+		mapped = new HashMap<>();
+		mapped.put("status_code", "301");
+		mapped.put("text","Moved Permanently");
+		map.put(REDIRECT,mapped);
+		
 		mapped = new HashMap<>();
 		mapped.put("status_code", "302");
 		mapped.put("text","Found");

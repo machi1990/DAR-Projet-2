@@ -83,7 +83,7 @@ public class HttpServer {
 		ResourceConfig config = ResourceConfig.newConfiguration();
 		config.packages("com.upmc.stl.dar.server.examples");
 		
-		int port = 30001;
+		int port = 30000;
 		start(port,config);
 	}
 }

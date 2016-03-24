@@ -55,6 +55,10 @@ public class Response {
 		this.headers.putAll(headers);
 	}
 	
+	public void addHeader(String value, String key) {
+		this.headers.put(value,key);
+	}
+	
 	public Status getStatus() {
 		return status;
 	}
@@ -112,20 +116,6 @@ public class Response {
 		this.body.append(object.toString());
 	}
 	
-	/**
-	 * TODO
-	 */
-	public void write() {
-		if (this.body == null) {
-			this.body = new StringBuilder("");
-		} 
-		
-		String result =  this.toString();	
-		System.out.println(result);
-		
-		// TODO writer.write(result);
-	}
-
 	@Override
 	public String toString() {
 		this.headers.put("Date", new Date().toString());
@@ -143,10 +133,16 @@ public class Response {
 		return result.toString().isEmpty() ? HttpServer.separtor(): result.toString();
 	}
 	
-	public static Response response(Status status) {
+	public static final Response response(Status status) {
 		return new Response(status);
 	}
 
+	public static final Response redirect(String location) {
+		Response response = response(Status.REDIRECT);
+		response.addHeader("Location", location);
+		return response;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
