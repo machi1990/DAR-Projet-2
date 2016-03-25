@@ -76,6 +76,18 @@ public class Request {
 		this.headers = headers;
 	}
 	
+	public Boolean containsHeader(String key) {
+		return headers.getHeaders().containsKey(key);
+	}
+	
+	public String getHeader(String key) {
+		if (containsHeader(key)) {
+			return headers.getHeaders().get(key).toString();
+		}
+		
+		return null;
+	}
+	
 	public String getUrlParams() {
 		Integer index = url.indexOf("?");
 		String urlParams = index != -1? url.substring(index + 1): "";

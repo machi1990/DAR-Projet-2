@@ -65,20 +65,14 @@ public class Connection implements Runnable {
 	}
 
 	public void run() {
-		OutputStream writer = null;
-
-		try {
-			socket.setSoTimeout(1);
+		try {		
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			writer = socket.getOutputStream();
+			OutputStream writer = socket.getOutputStream();
 
-			Request request = new Request();
 			Response response = Response.response(Status.OK);
-			String stringRequest = readInput(reader);
-
+			
 			try {
-				afterInputRetrieved(stringRequest, request);
-
+				Request request = Reader.newRequest(reader);
 				if (Request.isForWelcomeFile(request) && Asset.hasWelcomeFile()) {
 					sendFile(Asset.getWelcomeFile(), request, response, socket.getOutputStream());
 				} else if (request.matchesStaticResource()) {
@@ -124,9 +118,17 @@ public class Connection implements Runnable {
 		writer.write(response.toString().getBytes());
 	}
 
+	/**
+	 * 
+	 * @param reader
+	 * @return
+	 * @throws IOException
+	 */
+	@SuppressWarnings("unused")
+	@Deprecated
 	private String readInput(BufferedReader reader) throws IOException {
 		StringBuilder builder = new StringBuilder();
-		char[] charBuffer = new char[128];
+		char[] charBuffer = new char[1];
 		int bytesRead = -1;
 
 		try {
@@ -139,6 +141,14 @@ public class Connection implements Runnable {
 		return builder.toString();
 	}
 
+	/**
+	 * 
+	 * @param input
+	 * @param request
+	 * @throws ServerException
+	 */
+	@SuppressWarnings("unused")
+	@Deprecated
 	private void afterInputRetrieved(String input, Request request) throws ServerException {
 		String[] inputs = input.split("\r\n");
 		Headers headers = new Headers();
@@ -292,4 +302,95 @@ public class Connection implements Runnable {
 		return true;
 	}
 
+	private static class Reader {
+		private static final String headerEnds = HttpServer.separtor()+HttpServer.separtor();
+		
+		protected static Request newRequest(BufferedReader reader) throws ServerException {
+			StringBuilder builder = new StringBuilder();
+			char[] charBuffer = new char[1];
+			int bytesRead = -1;
+
+			try {
+				while ((bytesRead = reader.read(charBuffer)) > 0) {
+					builder.append(charBuffer, 0, bytesRead);
+					if (builder.toString().contains(headerEnds)) {
+						break;
+					}
+				}
+			}  catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			return readBody(reader, createRequest(builder.toString().replace(headerEnds,"")));
+		}
+		
+		private static Request createRequest(String input) throws ServerException {
+			Request request = new Request();
+			String[] inputs = input.split("\r\n");
+			Headers headers = new Headers();
+
+			if (input.isEmpty()) {
+				throw ExceptionCreator.creator().create(ExceptionKind.BAD_INPUT);
+			}
+
+			String[] methodUrlContainer = inputs[0].split(" ");
+			request.setMethod(methodUrlContainer[0]);
+			request.setUrl(methodUrlContainer[1]);
+
+			for (int i = 1; i < inputs.length; ++i) {
+				parse(inputs[i], request, headers);
+			}
+			request.setHeaders(headers);
+			
+			return request;
+		}
+
+		private static void parse(String value, Request request, Headers headers) {
+			if (value == null || value.isEmpty()) {
+				return;
+			}
+
+			int index = value.indexOf(":");
+			if (index < 0) {
+				return;
+			}
+
+			String key = value.substring(0, index);
+			value = value.substring(index + 1).trim();
+
+			switch (key) {
+			case "Cookie":
+				request.setCookies(value);
+				break;
+			default:
+				headers.put(key, value);
+			}
+		}
+
+		protected static Request readBody(BufferedReader reader, Request request) {
+			final String header = "Content-Length";
+			if (!request.containsHeader(header)) {
+				return request;
+			}
+			
+			StringBuilder body = new StringBuilder();
+			char[] charBuffer = new char[1];
+			int bytesRead = -1;
+			try {
+				final Long contentLength = Long.valueOf(request.getHeader(header).trim());
+				while (body.length() < contentLength) {
+					bytesRead = reader.read(charBuffer);
+					if (bytesRead < 0) {
+						continue;
+					}	
+					body.append(charBuffer, 0, bytesRead);
+				}
+			} catch (IOException e) {
+			}
+
+			request.setBody(body.toString());
+			
+			return request;
+		}
+	}
 }
