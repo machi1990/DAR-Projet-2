@@ -1,14 +1,40 @@
 <html lang="en">
 <head>
 <title>Index page</title>
+<link rel="stylesheet" href="/session/index.css"></link>
+<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css"></link>
+<script type="text/javascript" src="/jquery-2.2.2.min.js"></script>
+<script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/session/index.js"></script>
 </head>
 <body>
-
-	 <render>
-		SESSION ID: {{session_id}}
-		Number of connections: {{numberOfConnections}}
-		UserName: {{Name}}
-		Password: {{Password}}
-	</render>
+	<div class="container">
+		<a class="btn btn-primary btn-large pull-right" href="/session/disconnect">LOG OUT</a>
+		<a class="btn btn-primary btn-large pull-left" href="/session/subscribe.html">HOME</a>
+		<table class="table table-user-information">
+			<tbody>
+				<tr>
+					<td>Name:</td>
+					<td><render>{{name}}</render></td>
+				</tr>
+				<tr>
+					<td>Date:</td>
+					<td><render>{{date}}</render></td>
+				</tr>
+				<tr>
+					<td>Session ID:</td>
+					<td><render>{{session_id}}</render></td>
+				</tr>
+				<tr>
+					<td>Number of connections:</td>
+					<td><render>{{connections}}</render></td>
+				</tr>
+				<tr>
+					<td>Password:</td>
+					<td><render>{{password}}</render></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
 </body>
 </html>

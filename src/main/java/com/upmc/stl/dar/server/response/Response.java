@@ -108,12 +108,14 @@ public class Response {
 		cookies.put(session.cookieKey(), session);
 	}
 	
-	public void build(Object object) {
-		if (object == null) {
+	public void build(Object body) {
+		if (body == null) {
 			return;
+		} else if (this.body.toString().isEmpty()) {
+			this.body.append(HttpServer.separtor());
 		}
 		
-		this.body.append(object.toString());
+		this.body.append(body.toString());
 	}
 	
 	@Override
@@ -138,7 +140,7 @@ public class Response {
 	}
 
 	public static final Response redirect(String location) {
-		Response response = response(Status.REDIRECT);
+		Response response = response(Status.FOUND);
 		response.addHeader("Location", location);
 		return response;
 	}

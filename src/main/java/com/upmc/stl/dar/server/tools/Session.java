@@ -1,5 +1,7 @@
 package com.upmc.stl.dar.server.tools;
 
+import java.util.Date;
+
 import com.upmc.stl.dar.server.request.Cookie;
 
 import javafx.util.Pair;
@@ -10,6 +12,11 @@ public class Session extends Cookie {
 	
 	private Session() {
 		super();
+	}
+	
+	public void clear() {
+		cookie.setExpires(new Date());
+		cookie.setMaxAge(0l);
 	}
 	
 	public String getValue() {

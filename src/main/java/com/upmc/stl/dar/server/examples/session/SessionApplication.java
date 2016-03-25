@@ -1,6 +1,6 @@
 package com.upmc.stl.dar.server.examples.session;
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 import com.upmc.stl.dar.server.annotation.CONSUMES;
@@ -20,18 +20,6 @@ public class SessionApplication {
 	public static HashMap<Account, String> database = new HashMap<>();
 	public static HashMap<String, Account> activeSession = new HashMap<>();
 
-	@GET
-	@PATH("/subscribe/test")
-	public Model2View getSubscribeTest() {
-		Model2View view = new Model2View("/views/session/subscribe.html");
-		ArrayList<String> values = new ArrayList<>();
-		values.add("Mambooooo");
-		values.add("POAAA");
-		values.add("SHWAAARI");
-		view.put("origin", values);
-		return view;
-	}
-	
 	@POST
 	@PATH("/subscribe")
 	public Response postSubscribe(Request request, UrlParameters params) {
@@ -75,45 +63,61 @@ public class SessionApplication {
 			response = Response.response(Status.UNAUTHORIZED);
 			response.build("build error message : wrong password");
 		} else {
-			account.setNumberOfConnections(account.getNumberOfConnections() + 1);
-			response = Response.redirect("/session/index");
-			if (!request.hasActiveSession()) {
-				Session session = Session.newInstance();
-				database.replace(account, session.getValue());
-				activeSession.put(session.getValue(), account);
-			} else {
-				activeSession.put(request.sessionInstance().getValue(), account);
-			}
+			response = addToActiveSession(request, account);
 		}
 
 		return response;
 	}
 
+	private Response addToActiveSession(Request request, Account account) {
+		Response response = Response.response(Status.OK);
+		account.setNumberOfConnections(account.getNumberOfConnections() + 1);
+		if (!request.hasActiveSession()) {
+			Session session = Session.newInstance();
+			database.replace(account, session.getValue());
+			activeSession.put(session.getValue(), account);
+			response.addSession(session);
+		} else {
+			activeSession.put(request.sessionInstance().getValue(), account);
+		}
+		
+		return response;
+	}
+
 	@GET
 	@PATH("/disconnect")
-	public Response getDisconnect(Request request) {
-		if (request.hasActiveSession()) {
-			activeSession.remove(request.sessionInstance().getValue());
-		}
-
-		request.clearSession();
-
-		return Response.redirect("/session/subscribe.html");
+	public Response getDisconnect(Request request) {	
+		Response response = Response.redirect("/session/subscribe.html");
+		clearSession(request, response);
+		return response;
 	}
 
 	@GET
 	@PATH("/index")
 	public Object getIndex(Request request) {
 		if (!request.hasActiveSession() || !activeSession.containsKey(request.sessionInstance().getValue())) {
-			return Response.redirect("/session/subscribe.html");
+			Response response = Response.redirect("/session/subscribe.html");
+			clearSession(request, response);
+			return response;
 		} else {
 			Model2View model2Vie = new Model2View("/views/session/index.html");
 			Account account = activeSession.get(request.sessionInstance().getValue());
 			model2Vie.put("session_id", request.sessionInstance().getValue());
-			model2Vie.put("numberOfConnections", account.getNumberOfConnections());
-			model2Vie.put("Name", account.getUsername());
-			model2Vie.put("Password", account.getPassword());
+			model2Vie.put("connections", account.getNumberOfConnections());
+			model2Vie.put("name", account.getUsername());
+			model2Vie.put("password", account.getPassword());
+			model2Vie.put("date", new Date().toString());
 			return model2Vie;
+		}
+	}
+
+	private void clearSession(Request request, Response response) {
+		if (request.hasActiveSession()) {
+			activeSession.remove(request.sessionInstance().getValue());
+			Session session = request.sessionInstance();
+			session.clear();
+			response.addSession(session);
+			request.clearSession();
 		}
 	}
 }

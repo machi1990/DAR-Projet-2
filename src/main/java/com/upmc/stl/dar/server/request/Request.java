@@ -191,6 +191,7 @@ public class Request {
 			return;
 		}
 		
-		this.headers.remove(Session.sessionKey);
+		
+		this.cookies.remove(Session.sessionKey);
 	}
 }
