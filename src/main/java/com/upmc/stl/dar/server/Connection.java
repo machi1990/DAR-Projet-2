@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,10 +83,6 @@ public class Connection implements Runnable {
 				response = Response.response(Status.INTERNAL_SERVER_ERROR);
 				response.setContentType(ContentType.PLAIN);
 				response.build(e.getMessage());
-				// writer.write(response.toString().getBytes());
-				/**
-				 * TODO
-				 */
 			} finally {
 				writer.flush();
 				writer.close();
@@ -117,89 +112,7 @@ public class Connection implements Runnable {
 		
 		writer.write(response.toString().getBytes());
 	}
-
-	/**
-	 * 
-	 * @param reader
-	 * @return
-	 * @throws IOException
-	 */
-	@SuppressWarnings("unused")
-	@Deprecated
-	private String readInput(BufferedReader reader) throws IOException {
-		StringBuilder builder = new StringBuilder();
-		char[] charBuffer = new char[1];
-		int bytesRead = -1;
-
-		try {
-			while ((bytesRead = reader.read(charBuffer)) > 0) {
-				builder.append(charBuffer, 0, bytesRead);
-			}
-		} catch (SocketTimeoutException timeout) {
-		}
-
-		return builder.toString();
-	}
-
-	/**
-	 * 
-	 * @param input
-	 * @param request
-	 * @throws ServerException
-	 */
-	@SuppressWarnings("unused")
-	@Deprecated
-	private void afterInputRetrieved(String input, Request request) throws ServerException {
-		String[] inputs = input.split("\r\n");
-		Headers headers = new Headers();
-
-		if (input.isEmpty()) {
-			throw ExceptionCreator.creator().create(ExceptionKind.BAD_INPUT);
-		}
-
-		String[] methodUrlContainer = inputs[0].split(" ");
-		request.setMethod(methodUrlContainer[0]);
-		request.setUrl(methodUrlContainer[1]);
-
-		for (int i = 1; i < inputs.length - 1; ++i) {
-			parse(inputs[i], request, headers);
-		}
-
-		switch (request.getMethod()) {
-		case POST:
-		case PUT:
-			request.setBody(inputs[inputs.length - 1]);
-			break;
-		default:
-			parse(inputs[inputs.length - 1], request, headers);
-			break;
-		}
-
-		request.setHeaders(headers);
-	}
-
-	private void parse(String value, Request request, Headers headers) {
-		if (value == null || value.isEmpty()) {
-			return;
-		}
-
-		int index = value.indexOf(":");
-		if (index < 0) {
-			return;
-		}
-
-		String key = value.substring(0, index);
-		value = value.substring(index + 1).trim();
-
-		switch (key) {
-		case "Cookie":
-			request.setCookies(value);
-			break;
-		default:
-			headers.put(key, value);
-		}
-	}
-
+	
 	private void serveStaticFile(Request request, Response response, OutputStream out)
 			throws IOException, ServerException {
 		String url = request.getUrl();
