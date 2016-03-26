@@ -7,6 +7,8 @@ $(function () {
 		function gotoChatPage(xhr) {
 			if (xhr.status == 200) {
 		    	window.location.href = "/demo/chat.html";
+		    } else {
+		    	window.location.href = "/demo/home.html";
 		    }
 		}
 		
@@ -20,7 +22,8 @@ $(function () {
     			  	localStorage.setItem("password",data['password']);
 	    		    gotoChatPage(xhr);
 	    		    }
-	    		}).fail(function(err) {
+	    		}).fail(function(err,textStatus, xhr) {
+	    			gotoChatPage(xhr);
 	    	});
 		}
 		
@@ -88,7 +91,8 @@ $(function () {
 	    			  	localStorage.setItem("password",data['password']);
 	    		        gotoChatPage(xhr);
 	    		    }
-	    		}).fail(function(err) {
+	    		}).fail(function(err,textStatus, xhr) {
+	    			gotoChatPage(xhr);
 	    	});
 		});
 		

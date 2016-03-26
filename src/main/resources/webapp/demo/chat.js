@@ -20,6 +20,10 @@ $(function () {
         scrollbar.move(Math.max(0, content.find('> p').length) * 20);
     }
     
+    function gotoHome() {
+    	window.location.href = "/demo/home.html";
+    }
+    
     function update() {
     	$.ajax({
     		  method: "GET",
@@ -32,11 +36,17 @@ $(function () {
 		        		addMessage(item['postedBy'],item['content'],(item['postedBy'] == myName?myColor:senderColor),new Date(item['postedAt']));
 		        	}
 		        	slideScrollbar();
+		        } else {
+				    gotoHome();
 		        }
     		   }
     		}).fail(function(err) {
+    			gotoHome();
     	});
     }
+    
+    update();
+    var interval = setInterval(function(){ update() }, 4000);
     
     /**
      * Send mesage when user presses Enter key
@@ -51,6 +61,7 @@ $(function () {
   		        
   		    }
   		}).fail(function(err) {
+  			gotoHome();
   	});
     }
     
@@ -67,11 +78,7 @@ $(function () {
             input.focus();
             $(this).val('');
         }
-    });
-
-    update();
-    var interval = setInterval(function(){ update() }, 4000);
-    
+    });    
     
     /**
      * Add message to the chat window
