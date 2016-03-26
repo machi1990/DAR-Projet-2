@@ -27,8 +27,6 @@ $(function() {
 		data['username'] = $(this).find("#username").val();
 		data['password'] = $(this).find("#password").val();
 		
-		console.log($(this).find("#username").val());
-		
     	$.ajax({
     		  method: "POST",
     		  url: "/session/connect",
