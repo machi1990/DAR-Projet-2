@@ -46,7 +46,7 @@ $(function () {
     }
     
     update();
-    var interval = setInterval(function(){ update() }, 4000);
+    var interval = setInterval(function(){ update() }, 20000);
     
     /**
      * Send mesage when user presses Enter key

@@ -125,9 +125,17 @@ public class Chat {
 		
 		for (User user_: users) {
 			if (user_.getUsername().equals(username)) {
-				user = user_;
+				user.setFullName(user_.fullName);
+				user.setImage(user_.getImage());
+				user.setNumberOfConnections(user_.getNumberOfConnections());
+				user.setPassword(user_.getPassword());
+				user.setId(user_.getId());
 				break;
 			}
+		}
+		
+		if (user.getUsername() == null) {
+			throw ExceptionCreator.creator().create(ExceptionKind.NOT_SUPPORTED);
 		}
 		
 		return user;
