@@ -1,6 +1,17 @@
-<div style="position: relative; height: 400px">
-	<div class="list-thumb" id="listUsers">
-		<render for="user in  users">{{user}}<br>
+<table class="table table-striped"
+	style="width: 200px; position: absolute; top: 0px; right: 200px"
+	id="users2">
+	<thead>
+		<tr>
+			<th>Pseudo</th>
+		<tr>
+	</thead>
+	<tbody>
+		<render for="user in  users">
+		<tr><td>
+			<render>{{user}}</render>
+		</td>
+		<tr>
 		</render>
-	</div>
-</div>
+	</tbody>
+</table>
