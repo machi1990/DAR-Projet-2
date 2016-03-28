@@ -102,3 +102,26 @@ div.hover .thumb {
 .disable * {
 	display: none;
 }
+
+
+#chat {
+	padding: 5px;
+	background: #ddd;
+	border-radius: 5px;
+	border: 1px solid #CCC;
+	margin-top: 10px;
+	overflow: hidden;
+	position: relative;
+}
+
+.list-thumb {
+	opacity: 0.1;
+	cursor: pointer;
+	position:relative;
+	top: 0;
+	left: 0;
+	height: 400px;
+	border-radius: 7px;
+	background-color: black;
+}
+

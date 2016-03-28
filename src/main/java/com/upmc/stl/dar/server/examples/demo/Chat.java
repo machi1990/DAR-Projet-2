@@ -7,6 +7,8 @@ import java.util.List;
 
 import com.upmc.stl.dar.server.annotation.CONSUMES;
 import com.upmc.stl.dar.server.annotation.CONSUMES.Consumed;
+import com.upmc.stl.dar.server.configuration.views.Model2View;
+import com.upmc.stl.dar.server.examples.session.Account;
 import com.upmc.stl.dar.server.exceptions.ExceptionCreator;
 import com.upmc.stl.dar.server.exceptions.ExceptionCreator.ExceptionKind;
 import com.upmc.stl.dar.server.exceptions.ServerException;
@@ -38,12 +40,12 @@ public class Chat {
 	@POST
 	@CONSUMES(Consumed.JSON)
 	@PATH("/login")
-	public Response login(Request request,User user) {	
+	public Model2View login(Request request,User user) {	
 		Response response;
 		if (!users.contains(user)) {
 			response = Response.response(Status.UNAUTHORIZED);
 			response.build("build error message : Username not found");
-			return response;
+			return null;
 		}
 		
 		User user_ = null;
@@ -57,9 +59,16 @@ public class Chat {
 		if (!user_.getPassword().equals(user.getPassword())) {
 			response = Response.response(Status.UNAUTHORIZED);
 			response.build("build error message : wrong password");
-			return response;
+			return null;
 		} else {
-			return addToActiveSession(request, user_);
+			response = addToActiveSession(request, user_);
+			Model2View model2View = new Model2View("/webapp/demo/chat.html");
+			ArrayList<String> usernames = new ArrayList<String>();
+			for(User usr : users){
+				usernames.add(usr.getUsername());
+			}
+			model2View.put("userList", usernames);
+			return model2View;
 		}
 	}
 	

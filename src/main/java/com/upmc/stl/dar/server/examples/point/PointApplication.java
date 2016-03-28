@@ -12,8 +12,10 @@ import com.upmc.stl.dar.server.annotation.PARAM;
 import com.upmc.stl.dar.server.annotation.PATH;
 import com.upmc.stl.dar.server.annotation.POST;
 import com.upmc.stl.dar.server.annotation.PRODUCES;
+import com.upmc.stl.dar.server.annotation.PUT;
 import com.upmc.stl.dar.server.annotation.CONSUMES.Consumed;
 import com.upmc.stl.dar.server.request.ContentType;
+import com.upmc.stl.dar.server.request.UrlParameters;
 import com.upmc.stl.dar.server.response.Response;
 import com.upmc.stl.dar.server.response.Status;
 
@@ -69,11 +71,8 @@ public class PointApplication {
 	@PATH("/post")
 	public Response postPoint(Point point) {
 		points.put((long) (points.size()+1), point);
-		
 		Response response = Response.response(Status.OK);
-		
 		response.build(""+points.size());
-		
 		return response; 
 	}
 	
@@ -85,4 +84,11 @@ public class PointApplication {
 		points.put((long) (points.size()+1), new Point((int) Math.floor(first), (int) Math.floor(second)));
 		return new Point((int) Math.floor(first), (int) Math.floor(second)); 
 	}
+	
+	@PUT
+	@PATH("/put/<id>")
+	public void putPoint(@PARAM("<id>") Long id, UrlParameters params){
+		points.put(id, new Point(Integer.valueOf(params.get("x")), Integer.valueOf(params.get("y"))));
+	}
+	
 }
