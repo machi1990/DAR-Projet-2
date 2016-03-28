@@ -75,6 +75,10 @@ public class Chat {
 			response.addSession(session);
 			users.add(user);
 			activeSession.put(session.getValue(), user);
+			Message message = new Message();
+			message.setContent(user.getUsername() + " has joined the chatroom.");
+			message.setPostedBy("ChatBot");
+			addMessage(message);
 		} else {
 			response = Response.response(Status.UNAUTHORIZED);
 			response.build("Username already exists. Choose a different one.");
@@ -149,6 +153,12 @@ public class Chat {
 			throw ExceptionCreator.creator().create(ExceptionKind.NOT_SUPPORTED);
 		}
 		
+		addMessage(message);
+		
+		return Response.response(Status.OK);
+	}
+
+	private void addMessage(Message message) {
 		synchronized (messages) {
 			if (messages.size() == 200) {
 				messages.remove(0);
@@ -156,12 +166,15 @@ public class Chat {
 			message.setPostedAt(new Date());
 			messages.add(message);
 		}
-		
-		return Response.response(Status.OK);
 	}
 	
 	private void clearSession(Request request, Response response) {
 		if (request.hasActiveSession()) {
+			User user = activeSession.get(request.sessionInstance().getValue());
+			Message message = new Message();
+			message.setContent(user.getUsername() + " has left the chatroom.");
+			message.setPostedBy("ChatBot");
+			addMessage(message);
 			activeSession.remove(request.sessionInstance().getValue());
 			Session session = request.sessionInstance();
 			session.clear();
@@ -180,6 +193,11 @@ public class Chat {
 		} else {
 			activeSession.put(request.sessionInstance().getValue(), user);
 		}
+		
+		Message message = new Message();
+		message.setContent(user.getUsername() + " has joined the chatroom.");
+		message.setPostedBy("ChatBot");
+		addMessage(message);
 		
 		return response;
 	}
