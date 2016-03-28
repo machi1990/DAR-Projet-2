@@ -127,8 +127,8 @@ public class Chat {
 		}
 		
 		ArrayList<String> list = new ArrayList<>();
-		
-		for (User user:users) {
+		ArrayList<User> _users = new ArrayList<>(activeSession.values());
+		for (User user:_users) {
 			list.add(user.getUsername());
 		}
 		
