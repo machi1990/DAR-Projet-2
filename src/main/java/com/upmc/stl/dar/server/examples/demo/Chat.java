@@ -8,7 +8,6 @@ import java.util.List;
 import com.upmc.stl.dar.server.annotation.CONSUMES;
 import com.upmc.stl.dar.server.annotation.CONSUMES.Consumed;
 import com.upmc.stl.dar.server.configuration.views.Model2View;
-import com.upmc.stl.dar.server.examples.session.Account;
 import com.upmc.stl.dar.server.exceptions.ExceptionCreator;
 import com.upmc.stl.dar.server.exceptions.ExceptionCreator.ExceptionKind;
 import com.upmc.stl.dar.server.exceptions.ServerException;
@@ -40,12 +39,12 @@ public class Chat {
 	@POST
 	@CONSUMES(Consumed.JSON)
 	@PATH("/login")
-	public Model2View login(Request request,User user) {	
+	public Response login(Request request,User user) {	
 		Response response;
 		if (!users.contains(user)) {
 			response = Response.response(Status.UNAUTHORIZED);
 			response.build("build error message : Username not found");
-			return null;
+			return response;
 		}
 		
 		User user_ = null;
@@ -59,16 +58,9 @@ public class Chat {
 		if (!user_.getPassword().equals(user.getPassword())) {
 			response = Response.response(Status.UNAUTHORIZED);
 			response.build("build error message : wrong password");
-			return null;
+			return response;
 		} else {
-			response = addToActiveSession(request, user_);
-			Model2View model2View = new Model2View("/webapp/demo/chat.html");
-			ArrayList<String> usernames = new ArrayList<String>();
-			for(User usr : users){
-				usernames.add(usr.getUsername());
-			}
-			model2View.put("userList", usernames);
-			return model2View;
+			return addToActiveSession(request, user_);
 		}
 	}
 	
@@ -124,6 +116,26 @@ public class Chat {
 		}
 		
 		return list;
+	}
+	
+
+	@GET
+	@PATH("/users")
+	public Model2View usersHTML(Request request) throws ServerException {	
+		if (!request.hasActiveSession() || !activeSession.containsKey(request.sessionInstance().getValue())) {
+			throw ExceptionCreator.creator().create(ExceptionKind.NOT_SUPPORTED);
+		}
+		
+		ArrayList<String> list = new ArrayList<>();
+		
+		for (User user:users) {
+			list.add(user.getUsername());
+		}
+		
+		Model2View model2view  = new Model2View("/views/demo/users.html");
+		model2view.put("users", list);
+		
+		return model2view;
 	}
 	
 	@GET

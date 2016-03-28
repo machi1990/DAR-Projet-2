@@ -7,8 +7,8 @@ $(function () {
     	status = $('#status'),
     	home = $('#home'),
     	logout = $("#logout"),
-    	scrollbar = $('body > section:first').tinyscrollbar();
-        
+    	scrollbar = $('#chat').tinyscrollbar(),
+        users = $("#users");
 
     const myColor = "red",senderColor = "green",
     	myName = localStorage.getItem("username");
@@ -43,6 +43,18 @@ $(function () {
     		}).fail(function(err) {
     			gotoHome();
     	});
+    	
+    	$.ajax({
+  		  method: "GET",
+  		  url: "/demo/users",
+  		  success: function(data, textStatus, xhr) {
+		        if (xhr.status == 200) {
+		        	users.html("");
+		        	users.append(data);
+		        }
+  		   }
+  		}).fail(function(err) {		
+  	});
     }
     
     update();
