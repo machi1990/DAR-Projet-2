@@ -35,11 +35,6 @@ import com.upmc.stl.dar.server.response.Response;
 import com.upmc.stl.dar.server.response.Status;
 
 /**
- * TODO 
- * <ol>
- * 		<li> &nbsp Full review and correction </li>
- * </ol> 
- * <br>
  * @author Machi
  *
  */

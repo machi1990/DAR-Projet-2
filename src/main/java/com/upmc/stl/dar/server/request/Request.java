@@ -77,12 +77,12 @@ public class Request {
 	}
 	
 	public Boolean containsHeader(String key) {
-		return headers.getHeaders().containsKey(key);
+		return headers.getHeaders().containsKey(key.toLowerCase());
 	}
 	
 	public String getHeader(String key) {
 		if (containsHeader(key)) {
-			return headers.getHeaders().get(key).toString();
+			return headers.getHeaders().get(key.toLowerCase()).toString();
 		}
 		
 		return null;

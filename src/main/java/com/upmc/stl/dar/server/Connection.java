@@ -272,11 +272,12 @@ public class Connection implements Runnable {
 			value = value.substring(index + 1).trim();
 
 			switch (key) {
+			case "cookie":
 			case "Cookie":
 				request.setCookies(value);
 				break;
 			default:
-				headers.put(key, value);
+				headers.put(key.toLowerCase(), value);
 			}
 		}
 

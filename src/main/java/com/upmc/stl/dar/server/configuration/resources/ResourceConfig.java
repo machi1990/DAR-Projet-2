@@ -28,11 +28,6 @@ import com.upmc.stl.dar.server.exceptions.ExceptionCreator.ExceptionKind;
 
 
 /**
- *  TODO
- *  <ol>	
- *    <li> &nbsp Throws an exception in case of routing conflicts. </li>
- *   <ol>
- *  <br>
  * @author Machi
  *
  */
