@@ -48,9 +48,9 @@ public class Chat {
 		}
 		
 		User user_ = null;
-		for (User accnt : users) {
-			if (accnt.equals(user)) {
-				user_ = accnt;
+		for (User account : users) {
+			if (account.equals(user)) {
+				user_ = account;
 				break;
 			}
 		}

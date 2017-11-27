@@ -1,23 +1,20 @@
 package com.upmc.stl.dar.server;
 
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 
 import com.upmc.stl.dar.server.configuration.resources.ResourceConfig;
 import com.upmc.stl.dar.server.configuration.views.ViewParser;
 
 public class HttpServer {
 	private static final String SEPARATOR = "\r\n";
-	public static final String SERVER_NAME = "HomeMade/0.0.1";
+	public static final String SERVER_NAME = "HomeMade/1.0.0";
 	
-	private Integer port;
+	private Integer port = 20000;
 	private Boolean started = false;
 	private Dispatcher dispatcher = Dispatcher.dispatcher();
-	
-	private HttpServer() {
-		this.port = 20000;
-	}
 
 	private HttpServer(Integer port) {
 		this.port = 20000;
@@ -39,26 +36,28 @@ public class HttpServer {
 			return;
 		}
 
-		Socket socket;
-		ServerSocket server = new ServerSocket(port);
 
+		ServerSocketChannel  channel = ServerSocketChannel.open();
+		channel.socket().bind(new InetSocketAddress(port));
+		channel.configureBlocking(false);
 		System.out.println("Server started at "+ port);
 		
 		this.started = true;
 		while (true) {
 			try {
-				socket = server.accept();
-				System.err.println("New client connected");
-				dispatcher.dispatch(new Connection(socket));
+			    final SocketChannel socketChannel = channel.accept();
+			    if (socketChannel == null) continue;
+
+				dispatcher.dispatch(new Connection(socketChannel));
 			} catch (IOException e1) {
 				e1.printStackTrace();
 				this.started = false;
-				server.close();
+				channel.close();
 			}
 		}
 	} 
 
-	public static final String separtor() {
+	public static final String separator() {
 		return SEPARATOR;
 	}
 	

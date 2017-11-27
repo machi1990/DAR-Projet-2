@@ -101,6 +101,6 @@ public enum Status {
 				return NOT_IMPLEMENTED.toString();
 		}
 		
-		return "HTTP/1.1 "+ map.get(this).get("status_code") + " " + map.get(this).get("text") + HttpServer.separtor();
+		return "HTTP/1.1 "+ map.get(this).get("status_code") + " " + map.get(this).get("text") + HttpServer.separator();
 	}
 }

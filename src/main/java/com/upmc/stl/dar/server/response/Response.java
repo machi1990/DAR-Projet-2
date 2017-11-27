@@ -112,7 +112,7 @@ public class Response {
 		if (body == null) {
 			return;
 		} else if (this.body.toString().isEmpty()) {
-			this.body.append(HttpServer.separtor());
+			this.body.append(HttpServer.separator());
 		}
 		
 		this.body.append(body.toString());
@@ -124,7 +124,7 @@ public class Response {
 		
 		String header =  status + this.headers.toString() + stringifyCookie();
 		
-		return header.replaceAll(HttpServer.separtor()+"{2,}", "") + this.body; 
+		return header.replaceAll(HttpServer.separator()+"{2,}", "") + this.body;
 	}
 	
 	private String stringifyCookie() {
@@ -132,7 +132,7 @@ public class Response {
 		for (String key:cookies.keySet()) {
 			result.append("Set-"+ cookies.get(key)); 
 		}
-		return result.toString().isEmpty() ? HttpServer.separtor(): result.toString();
+		return result.toString().isEmpty() ? HttpServer.separator(): result.toString();
 	}
 	
 	public static final Response response(Status status) {

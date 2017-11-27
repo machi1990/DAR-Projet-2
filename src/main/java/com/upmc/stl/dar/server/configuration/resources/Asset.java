@@ -1,13 +1,14 @@
 package com.upmc.stl.dar.server.configuration.resources;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import com.upmc.stl.dar.server.response.Response;
 
-public class Asset {
+public class Asset implements Cloneable {
 	private static Asset welcomeFile = null;
 	private Path path;
 	private String contentType;
@@ -25,18 +26,26 @@ public class Asset {
 		this.path = path;
 		contentType = FileContentType.getType(path.toString());
 	}
-	
-	public void sendFile(Response response,OutputStream out) throws IOException {
+
+	public void sendFile(Response response,SocketChannel channel) throws IOException {
 		response.setContentType(contentType());
-		out.write(response.toString().getBytes());
-		out.write(Files.readAllBytes(path));
+		byte[] bytes = response.toString().getBytes();
+		ByteBuffer buffer = ByteBuffer.allocate(bytes.length);
+		buffer.put(bytes);
+		buffer.flip();
+		channel.write(buffer);
+		bytes = Files.readAllBytes(path);
+		buffer = ByteBuffer.allocate(bytes.length);
+		buffer.put(bytes);
+		buffer.flip();
+		channel.write(buffer);
 	}
-	
-	public void makeWelcomeFile() {
+
+	public void makeWelcomeFile() throws CloneNotSupportedException {
 		Asset.welcomeFile = clone();
 	}
 	
-	public Asset clone() {
+	public Asset clone() throws CloneNotSupportedException {
 		Asset clone = new Asset();
 		
 		clone.path = path;
@@ -85,7 +94,11 @@ public class Asset {
 	}
 	
 	public static void makeWelcomeFile(Asset asset) {
-		welcomeFile = asset.clone();
+		try {
+			welcomeFile = asset.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static Asset getWelcomeFile () {

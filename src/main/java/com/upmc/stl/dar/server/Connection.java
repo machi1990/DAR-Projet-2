@@ -1,11 +1,9 @@
 package com.upmc.stl.dar.server;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,8 +18,8 @@ import com.upmc.stl.dar.server.exceptions.ExceptionCreator;
 import com.upmc.stl.dar.server.exceptions.ExceptionCreator.ExceptionKind;
 import com.upmc.stl.dar.server.exceptions.ServerException;
 import com.upmc.stl.dar.server.request.ContentType;
-import com.upmc.stl.dar.server.request.Headers;
 import com.upmc.stl.dar.server.request.Request;
+import com.upmc.stl.dar.server.request.RequestBuilder;
 import com.upmc.stl.dar.server.response.Response;
 import com.upmc.stl.dar.server.response.Status;
 import com.upmc.stl.dar.server.tools.Session;
@@ -30,13 +28,13 @@ import com.upmc.stl.dar.server.tools.Session;
  * A thread for each connection
  */
 public class Connection implements Runnable {
-	private Socket socket;
 	private Set<Resource> resources = new HashSet<>();
 	private Map<String, Asset> assets = new HashMap<>();
 	private Map<String, View> views = new HashMap<>();
+	private final SocketChannel socketChannel;
 
-	protected Connection(Socket socket) {
-		this.socket = socket;
+	protected Connection(SocketChannel channel) {
+		this.socketChannel = channel;
 	}
 
 	protected Connection setResources(Set<Resource> resources) {
@@ -64,38 +62,32 @@ public class Connection implements Runnable {
 	}
 
 	public void run() {
-		try {		
-			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			OutputStream writer = socket.getOutputStream();
-
+		try {
 			Response response = Response.response(Status.OK);
-			
 			try {
-				Request request = Reader.newRequest(reader);
+				Request request = RequestBuilder.newRequest(this.socketChannel);
 				if (Request.isForWelcomeFile(request) && Asset.hasWelcomeFile()) {
-					sendFile(Asset.getWelcomeFile(), request, response, socket.getOutputStream());
+					sendFile(Asset.getWelcomeFile(), request, response);
 				} else if (request.matchesStaticResource()) {
-					serveStaticFile(request, response, socket.getOutputStream());
+					serveStaticFile(request, response);
 				} else {
-					serveDynamicResource(writer, request);
+					response = executeDynamicResource(request);
+					sendResponse(response);
 				}
 			} catch (ServerException | IOException e) {
 				response = Response.response(Status.INTERNAL_SERVER_ERROR);
 				response.setContentType(ContentType.PLAIN);
 				response.build(e.getMessage());
+				sendResponse(response);
 			} finally {
-				writer.flush();
-				writer.close();
-				reader.close();
-				socket.close();
-				System.err.println("Client connexion closed");
+				this.socketChannel.close();
 			}
 		} catch (IOException e) {
-			System.err.println("Error in Connection.run()");
+			e.printStackTrace();
 		}
 	}
 
-	private void serveDynamicResource(OutputStream writer, Request request) throws IOException {
+	private Response executeDynamicResource(Request request) throws IOException {
 		Response response;
 		Object result = invoke(request);
 		if (result instanceof Response) {
@@ -109,24 +101,31 @@ public class Connection implements Runnable {
 		if (request.hasActiveSession()) { // Update session time
 			response.addSession(request.sessionInstance());
 		}
-		
-		writer.write(response.toString().getBytes());
+
+		return response;
 	}
-	
-	private void serveStaticFile(Request request, Response response, OutputStream out)
-			throws IOException, ServerException {
-		String url = request.getUrl();
+
+	private void sendResponse(Response response) throws IOException {
+		final byte[] bytes = response.toString().getBytes();
+		final ByteBuffer buffer = ByteBuffer.allocate(bytes.length);
+		buffer.put(bytes);
+		buffer.flip();
+		this.socketChannel.write(buffer);
+	}
+
+	private void serveStaticFile(Request request, Response response) throws IOException, ServerException {
+		final String url = request.getUrl();
 
 		if (!assets.containsKey(url)) {
 			throw ExceptionCreator.creator().create(ExceptionKind.NOT_FOUND);
 		}
 
-		Asset asset = assets.get(url);
+		final Asset asset = assets.get(url);
 
-		sendFile(asset, request, response, out);
+		sendFile(asset, request, response);
 	}
 
-	private void sendFile(Asset asset, Request request, Response response, OutputStream stream) throws IOException {
+	private void sendFile(final Asset asset, final Request request, Response response) throws IOException {
 		if (asset == null) {
 			return;
 		}
@@ -137,7 +136,7 @@ public class Connection implements Runnable {
 		}
 		response = Response.response(Status.OK);
 		response.setContentType(asset.contentType());
-		asset.sendFile(response, stream);
+		asset.sendFile(response, this.socketChannel);
 	}
 
 	private Object invoke(Request request) {
@@ -154,7 +153,6 @@ public class Connection implements Runnable {
 				return response_;
 			} catch (ServerException notMatchedException) {
 				// Catch and continue
-
 			}
 		}
 
@@ -174,10 +172,10 @@ public class Connection implements Runnable {
 
 		Response response;
 
-		View view = views.get(model2View.getTemplate());
+		final View view = views.get(model2View.getTemplate());
 
 		try {
-			String content = view.build(model2View.getTemplate(), model2View.getEnvironment());
+			final String content = view.build(model2View.getTemplate(), model2View.getEnvironment());
 			response = Response.response(Status.OK);
 			response.setContentType(ContentType.HTML);
 			response.build(content);
@@ -191,120 +189,29 @@ public class Connection implements Runnable {
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((socket == null) ? 0 : socket.hashCode());
-		return result;
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		Connection that = (Connection) o;
+
+		if (resources != null ? !resources.equals(that.resources) : that.resources != null)
+			return false;
+		if (assets != null ? !assets.equals(that.assets) : that.assets != null)
+			return false;
+		if (views != null ? !views.equals(that.views) : that.views != null)
+			return false;
+		return socketChannel != null ? socketChannel.equals(that.socketChannel) : that.socketChannel == null;
 	}
 
 	@Override
-	public boolean equals(Object object) {
-		if (this == object)
-			return true;
-		if (object == null)
-			return false;
-		if (getClass() != object.getClass())
-			return false;
-		Connection connection = (Connection) object;
-		if (socket == null) {
-			if (connection.socket != null)
-				return false;
-		} else if (!socket.equals(connection.socket))
-			return false;
-		return true;
-	}
-
-	private static class Reader {
-		private static final String headerEnds = HttpServer.separtor()+HttpServer.separtor();
-		
-		protected static Request newRequest(BufferedReader reader) throws ServerException {
-			StringBuilder builder = new StringBuilder();
-			char[] charBuffer = new char[1];
-			int bytesRead = -1;
-
-			try {
-				while ((bytesRead = reader.read(charBuffer)) > 0) {
-					builder.append(charBuffer, 0, bytesRead);
-					if (builder.toString().contains(headerEnds)) {
-						break;
-					}
-				}
-			}  catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			return readBody(reader, createRequest(builder.toString().replace(headerEnds,"")));
-		}
-		
-		private static Request createRequest(String input) throws ServerException {
-			Request request = new Request();
-			String[] inputs = input.split("\r\n");
-			Headers headers = new Headers();
-
-			if (input.isEmpty()) {
-				throw ExceptionCreator.creator().create(ExceptionKind.BAD_INPUT);
-			}
-
-			String[] methodUrlContainer = inputs[0].split(" ");
-			request.setMethod(methodUrlContainer[0]);
-			request.setUrl(methodUrlContainer[1]);
-
-			for (int i = 1; i < inputs.length; ++i) {
-				parse(inputs[i], request, headers);
-			}
-			request.setHeaders(headers);
-			
-			return request;
-		}
-
-		private static void parse(String value, Request request, Headers headers) {
-			if (value == null || value.isEmpty()) {
-				return;
-			}
-
-			int index = value.indexOf(":");
-			if (index < 0) {
-				return;
-			}
-
-			String key = value.substring(0, index);
-			value = value.substring(index + 1).trim();
-
-			switch (key) {
-			case "cookie":
-			case "Cookie":
-				request.setCookies(value);
-				break;
-			default:
-				headers.put(key.toLowerCase(), value);
-			}
-		}
-
-		protected static Request readBody(BufferedReader reader, Request request) {
-			final String header = "Content-Length";
-			if (!request.containsHeader(header)) {
-				return request;
-			}
-			
-			StringBuilder body = new StringBuilder();
-			char[] charBuffer = new char[1];
-			int bytesRead = -1;
-			try {
-				final Long contentLength = Long.valueOf(request.getHeader(header).trim());
-				while (body.length() < contentLength) {
-					bytesRead = reader.read(charBuffer);
-					if (bytesRead < 0) {
-						continue;
-					}	
-					body.append(charBuffer, 0, bytesRead);
-				}
-			} catch (IOException e) {
-			}
-
-			request.setBody(body.toString());
-			
-			return request;
-		}
+	public int hashCode() {
+		int result = resources != null ? resources.hashCode() : 0;
+		result = 31 * result + (assets != null ? assets.hashCode() : 0);
+		result = 31 * result + (views != null ? views.hashCode() : 0);
+		result = 31 * result + (socketChannel != null ? socketChannel.hashCode() : 0);
+		return result;
 	}
 }

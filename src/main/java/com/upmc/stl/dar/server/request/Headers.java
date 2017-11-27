@@ -60,7 +60,7 @@ public class Headers {
 		String headers = "";
 		
 		for (String header: this.headers.keySet()) {
-			headers += header + ": "+ this.headers.get(header).toString() + HttpServer.separtor(); 
+			headers += header + ": "+ this.headers.get(header).toString() + HttpServer.separator();
 		}
 		
 		return headers;

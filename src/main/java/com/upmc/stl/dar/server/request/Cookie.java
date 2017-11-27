@@ -228,7 +228,7 @@ public class Cookie {
 			cookie += "; HttpOnly";
 		}
 		
-		return cookie + HttpServer.separtor();
+		return cookie + HttpServer.separator();
 	}
 	
 	/**
