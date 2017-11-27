@@ -46,7 +46,7 @@ public class Application {
 	
 
 	private static String htmlify(Request request) {
-		String html = "<table border=\"1\" style=\"width:100%\">"
+		return "<table border=\"1\" style=\"width:100%\">"
 				+ "<thead><tr> "
 				+ "<th> METHOD </th>"
 				+ "<th> URL </th>"
@@ -62,7 +62,5 @@ public class Application {
 				+ (request.hasBody() ?"<td>"+request.getBody()+"</td>":"")
 				+ "</tr><tbody>"
 				+ "</table>";
-		
-		return html;
 	}
 }

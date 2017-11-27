@@ -29,10 +29,9 @@ public class PointApplication {
 	}
 	
 	private static void initializePointsDB() {
-		Point point;
 		Random random = new Random();
 		for (Integer index = 0; index < 10; ++index) {
-			point = new Point(random.nextInt(1000), random.nextInt(1000));
+			final Point point = new Point(random.nextInt(1000), random.nextInt(1000));
 			points.put(Long.parseLong(index.toString()), point);
 		}
 	}

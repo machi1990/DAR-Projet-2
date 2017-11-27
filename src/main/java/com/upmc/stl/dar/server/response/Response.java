@@ -22,7 +22,7 @@ public class Response {
 	private Status status;
 	private Map<String,Cookie> cookies = new HashMap<>();
 	
-	public Response() {
+	private Response() {
 		this(Status.OK,new Headers());
 	}
 	
@@ -137,6 +137,10 @@ public class Response {
 	
 	public static final Response response(Status status) {
 		return new Response(status);
+	}
+
+	public static Response ok() {
+		return new Response();
 	}
 
 	public static final Response redirect(String location) {
